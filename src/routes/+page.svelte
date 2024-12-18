@@ -9,7 +9,7 @@
 </p>
 
 <div class="flex w-full flex-col gap-8 p-4">
-	<TextInput />
-	<CheckboxInput />
-	<FileInput />
+	<TextInput id="name" />
+	<CheckboxInput id="agree" />
+	<FileInput id="file-upload" />
 </div>

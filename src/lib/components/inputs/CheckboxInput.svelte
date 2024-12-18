@@ -4,14 +4,14 @@
 	import { cn } from '$utils';
 
 	let {
-		id,
-		name = id,
+		id = 'checkbox',
+		name = id ?? 'checkbox',
 		'class': className,
 		disabled = false,
 		'aria-disabled': ariaDisabled = false,
 		'aria-label': ariaLabel,
-		checked = $bindable(),
-		ref = $bindable(null),
+		checked = $bindable<boolean | undefined>(),
+		ref = $bindable<HTMLInputElement | null>(null),
 		onCheckedChange,
 		...props
 	}: CheckboxInputProps = $props();
@@ -24,9 +24,7 @@
 
 <label
 	class={cn(
-		'inline-flex size-4 shrink-0 items-center justify-center rounded-sm border border-primary ring-offset-background focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
-		disabled && 'cursor-not-allowed opacity-50',
-		checked && 'bg-primary',
+		'group inline-flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-sm border border-primary [&:has(:checked)]:bg-primary [&:has(:disabled)]:cursor-not-allowed [&:has(:disabled)]:opacity-50 [&:has(:focus-visible)]:ring-2 [&:has(:focus-visible)]:ring-ring [&:has(:focus-visible)]:ring-offset-2 [&:has(:focus-visible)]:ring-offset-background ',
 		className,
 	)}
 	aria-label={ariaLabel ?? (checked ? 'Checked' : 'Not Checked')}
