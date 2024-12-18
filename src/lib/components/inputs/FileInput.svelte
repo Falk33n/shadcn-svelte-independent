@@ -4,13 +4,13 @@
 	import { cn } from '$utils';
 
 	let {
-		id,
-		name = id,
+		id = 'file',
+		name = id ?? 'file',
 		'class': className,
 		children,
 		disabled = false,
-		value = null,
-		ref = $bindable(null),
+		value = $bindable<FileList | null | undefined>(),
+		ref = $bindable<HTMLInputElement | null>(null),
 		'aria-disabled': ariaDisabled = false,
 		onFileChange,
 		...props
@@ -26,8 +26,7 @@
 
 <label
 	class={cn(
-		'inline-flex h-9 w-fit items-center gap-2 rounded-md border border-input bg-transparent px-3 py-1 text-sm font-medium uppercase text-foreground shadow-sm transition-colors focus-within:outline-none focus-within:ring-1 focus-within:ring-ring',
-		disabled && 'cursor-not-allowed opacity-50',
+		'inline-flex h-9 w-full cursor-pointer items-center gap-2 rounded-md border border-input bg-transparent px-3 py-1 text-sm font-medium uppercase text-foreground shadow-sm transition-colors sm:w-[300px] [&:has(:disabled)]:cursor-not-allowed [&:has(:disabled)]:opacity-50 [&:has(:focus-visible)]:ring-1 [&:has(:focus-visible)]:ring-ring',
 		className,
 	)}
 >
@@ -54,6 +53,7 @@
 		multiple
 		aria-disabled={ariaDisabled || disabled}
 		bind:this={ref}
+		bind:files={value}
 		{id}
 		{name}
 		{disabled}

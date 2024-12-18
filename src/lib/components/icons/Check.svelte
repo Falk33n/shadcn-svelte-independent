@@ -4,6 +4,7 @@
 	let {
 		'class': className,
 		'aria-hidden': ariaHidden = true,
+		ref = $bindable<HTMLOrSVGElement | null>(null),
 		...props
 	}: IconProps = $props();
 </script>
@@ -16,6 +17,7 @@
 	viewBox="0 0 24 24"
 	xmlns="http://www.w3.org/2000/svg"
 	transform="rotate(0 0 0)"
+	bind:this={ref}
 	{...props}
 >
 	<path
