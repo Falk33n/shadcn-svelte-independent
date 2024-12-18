@@ -1,5 +1,5 @@
 <script>
-	import { Checkbox, TextInput } from '$components/inputs';
+	import { CheckboxInput, FileInput, TextInput } from '$components/inputs';
 </script>
 
 <h1>Welcome to SvelteKit</h1>
@@ -10,5 +10,6 @@
 
 <div class="flex w-full flex-col gap-8 p-4">
 	<TextInput />
-	<Checkbox />
+	<CheckboxInput />
+	<FileInput />
 </div>

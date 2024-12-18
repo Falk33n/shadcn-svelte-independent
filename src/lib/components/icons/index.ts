@@ -1,4 +1,6 @@
-import Checked from './Checked.svelte';
+import Check from './Check.svelte';
+import Upload1 from './Upload1.svelte';
+
+export { Check, Upload1 };
 
 export type { IconProps } from './types';
-export { Checked };
