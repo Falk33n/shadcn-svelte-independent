@@ -1,5 +1,10 @@
 <script>
-	import { CheckboxInput, FileInput, TextInput } from '$components/inputs';
+	import {
+		CheckboxInput,
+		FileInput,
+		NumberInput,
+		TextInput,
+	} from '$components/inputs';
 </script>
 
 <h1>Welcome to SvelteKit</h1>
@@ -12,4 +17,5 @@
 	<TextInput id="name" />
 	<CheckboxInput id="agree" />
 	<FileInput id="file-upload" />
+	<NumberInput id="number" />
 </div>

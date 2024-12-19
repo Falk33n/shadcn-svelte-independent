@@ -8,10 +8,10 @@
 		name = id ?? 'checkbox',
 		'class': className,
 		disabled = false,
-		'aria-disabled': ariaDisabled = false,
 		'aria-label': ariaLabel,
 		checked = $bindable<boolean | undefined>(),
 		ref = $bindable<HTMLInputElement | null>(null),
+		autocomplete = 'off',
 		onCheckedChange,
 		...props
 	}: CheckboxInputProps = $props();
@@ -37,10 +37,11 @@
 		class="sr-only"
 		onchange={(e) => changeChecked(e.currentTarget.checked)}
 		type="checkbox"
-		aria-disabled={ariaDisabled || disabled}
+		aria-disabled={disabled}
 		aria-checked={checked}
 		bind:checked
 		bind:this={ref}
+		{autocomplete}
 		{id}
 		{name}
 		{disabled}

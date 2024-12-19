@@ -1,6 +1,7 @@
 import Check from './Check.svelte';
-import Upload1 from './Upload1.svelte';
+import ChevronUp from './ChevronUp.svelte';
+import Upload from './Upload.svelte';
 
-export { Check, Upload1 };
+export { Check, ChevronUp, Upload };
 
 export type { IconProps } from './types';

@@ -15,10 +15,18 @@ export type CheckboxInputProps = Omit<
 };
 
 export type FileInputProps = Omit<InputProps, 'value' | 'onValueChange'> & {
-	value?: FileList | null;
+	files?: FileList | null;
 	onFileChange?: (file: FileList | null) => void;
 };
 
-export type NumberInputProps = Omit<InputProps, 'onValueChange'> & {
+export type NumberInputProps = Omit<
+	InputProps,
+	'defaultValue' | 'min' | 'max' | 'value' | 'step' | 'onValueChange'
+> & {
+	value?: number;
+	step?: number;
+	min?: number;
+	max?: number;
+	defaultValue?: number;
 	onNumberChange?: (number: number) => void;
 };
