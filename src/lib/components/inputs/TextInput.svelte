@@ -8,6 +8,8 @@
 		class: className,
 		value = $bindable<string | undefined>(),
 		ref = $bindable<HTMLInputElement | null>(null),
+		autocomplete = 'off',
+		disabled,
 		onValueChange,
 		...props
 	}: InputProps = $props();
@@ -25,9 +27,12 @@
 	)}
 	type="text"
 	onchange={(e) => changeValue(e.currentTarget.value)}
+	aria-disabled={disabled}
 	bind:this={ref}
 	bind:value
+	{autocomplete}
 	{id}
+	{disabled}
 	{name}
 	{...props}
 />

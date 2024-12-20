@@ -1,13 +1,14 @@
-import CheckboxInput from './CheckboxInput.svelte';
+import Checkbox from './Checkbox.svelte';
 import FileInput from './FileInput.svelte';
 import NumberInput from './NumberInput.svelte';
 import TextInput from './TextInput.svelte';
 
-export { CheckboxInput, FileInput, NumberInput, TextInput };
+export { Checkbox, FileInput, NumberInput, TextInput };
 
 export type {
-	CheckboxInputProps,
+	CheckboxProps,
 	FileInputProps,
 	InputProps,
 	NumberInputProps,
+	NumberKeyboardEvent,
 } from './types';
