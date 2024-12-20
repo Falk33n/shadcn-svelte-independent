@@ -7,10 +7,7 @@ export type InputProps = Omit<HTMLInputAttributes, 'value' | 'type' | 'id'> & {
 	onValueChange?: (value: string) => void;
 };
 
-export type CheckboxInputProps = Omit<
-	InputProps,
-	'children' | 'onValueChange'
-> & {
+export type CheckboxProps = Omit<InputProps, 'children' | 'onValueChange'> & {
 	onCheckedChange?: (checked: boolean) => void;
 };
 
@@ -29,4 +26,8 @@ export type NumberInputProps = Omit<
 	max?: number;
 	defaultValue?: number;
 	onNumberChange?: (number: number) => void;
+};
+
+export type NumberKeyboardEvent = KeyboardEvent & {
+	currentTarget: EventTarget & HTMLButtonElement;
 };

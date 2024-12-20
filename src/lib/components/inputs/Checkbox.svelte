@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Check } from '$components/icons';
-	import type { CheckboxInputProps } from '$components/inputs';
+	import type { CheckboxProps } from '$components/inputs';
 	import { cn } from '$utils';
 
 	let {
@@ -14,7 +14,7 @@
 		autocomplete = 'off',
 		onCheckedChange,
 		...props
-	}: CheckboxInputProps = $props();
+	}: CheckboxProps = $props();
 
 	function changeChecked(newChecked: boolean) {
 		checked = newChecked;
@@ -24,21 +24,17 @@
 
 <label
 	class={cn(
-		'group inline-flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-sm border border-primary [&:has(:checked)]:bg-primary [&:has(:disabled)]:cursor-not-allowed [&:has(:disabled)]:opacity-50 [&:has(:focus-visible)]:ring-2 [&:has(:focus-visible)]:ring-ring [&:has(:focus-visible)]:ring-offset-2 [&:has(:focus-visible)]:ring-offset-background ',
+		'inline-flex size-4 cursor-pointer items-center justify-center rounded-sm border border-primary shadow-sm [&:has(:checked)]:bg-primary [&:has(:disabled)]:cursor-not-allowed [&:has(:disabled)]:opacity-50 [&:has(:focus-visible)]:ring-2 [&:has(:focus-visible)]:ring-ring [&:has(:focus-visible)]:ring-offset-2 [&:has(:focus-visible)]:ring-offset-background',
 		className,
 	)}
-	aria-label={ariaLabel ?? (checked ? 'Checked' : 'Not Checked')}
 >
-	{#if checked}
-		<Check class="scale-150 [&>path]:fill-primary-foreground" />
-	{/if}
-
 	<input
 		class="sr-only"
 		onchange={(e) => changeChecked(e.currentTarget.checked)}
 		type="checkbox"
 		aria-disabled={disabled}
 		aria-checked={checked}
+		aria-live="polite"
 		bind:checked
 		bind:this={ref}
 		{autocomplete}
@@ -47,4 +43,8 @@
 		{disabled}
 		{...props}
 	/>
+
+	{#if checked}
+		<Check class="scale-150 [&>path]:fill-primary-foreground" />
+	{/if}
 </label>

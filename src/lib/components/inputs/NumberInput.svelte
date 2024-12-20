@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { ChevronUp } from '$components/icons';
-	import type { NumberInputProps } from '$components/inputs';
+	import type {
+		NumberInputProps,
+		NumberKeyboardEvent,
+	} from '$components/inputs';
 	import { cn } from '$utils';
 
 	let {
@@ -40,18 +43,27 @@
 		clearInterval(intervalId);
 		intervalId = undefined;
 	}
+
+	function startKeyboardValueChange(
+		e: NumberKeyboardEvent,
+		stepAmount: number,
+	) {
+		if (e.key !== ' ' && e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+		changeValue(value ?? (defaultValue ?? 0) + stepAmount);
+	}
 </script>
 
 <div
 	class={cn(
-		'flex h-10 w-full overflow-hidden rounded-md border border-input bg-transparent px-3 py-1 shadow-sm transition-colors [&:has(:disabled)]:cursor-not-allowed [&:has(:disabled)]:opacity-50 [&:has(:focus-visible)]:ring-1 [&:has(:focus-visible)]:ring-ring',
+		'group flex h-9 w-full overflow-hidden rounded-md border border-input bg-transparent pr-3 shadow-sm transition-colors [&:has(:disabled)]:cursor-not-allowed [&:has(:disabled)]:opacity-50 [&:has(:focus-visible)]:ring-1 [&:has(:focus-visible)]:ring-ring',
 		className,
 	)}
 >
 	<input
-		class="size-full rounded-md border-0 text-sm placeholder:text-muted-foreground focus-visible:outline-none"
+		class="size-full rounded-md border-0 px-3 py-1 text-sm placeholder:text-muted-foreground focus-visible:outline-none"
 		type="number"
 		aria-disabled={disabled}
+		aria-describedby={`number-description-${id}`}
 		onchange={(e) => changeValue(parseFloat(e.currentTarget.value))}
 		aria-live="polite"
 		aria-valuenow={value ?? defaultValue ?? 0}
@@ -70,39 +82,51 @@
 		{...props}
 	/>
 
-	<span class="ml-3 flex flex-col justify-center">
+	<span
+		id={`number-description-${id}`}
+		class="sr-only"
+	>
+		Use the buttons or type to adjust the value. Minimum is {min}, maximum is {max},
+		and step size is {step}.
+	</span>
+
+	<div class="hidden flex-col justify-center group-focus-within:flex">
 		<button
-			class="rounded-md p-0.5 pb-0 transition-colors hover:bg-primary/10 focus-visible:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-			aria-label="Increment"
+			class="rounded-md px-1 pb-0 pt-0.5 transition-colors hover:bg-primary/10 focus-visible:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+			aria-label={`Increment by ${step}`}
 			aria-disabled={disabled}
 			aria-controls={id}
+			type="button"
 			onmousedown={() => startValueChange(step)}
 			onmouseup={stopValueChange}
 			onmouseleave={stopValueChange}
 			ontouchstart={() => startValueChange(step)}
 			ontouchend={stopValueChange}
+			onkeydown={(e) => startKeyboardValueChange(e, step)}
 			{disabled}
 		>
 			<ChevronUp class="size-3.5 scale-150 [&>path]:fill-foreground" />
 		</button>
 
 		<button
-			class="rounded-md p-0.5 pt-0 transition-colors hover:bg-primary/10 focus-visible:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-			aria-label="Decrement"
+			class="rounded-md px-1 pb-0.5 pt-0 transition-colors hover:bg-primary/10 focus-visible:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+			aria-label={`Decrement by ${step}`}
 			aria-disabled={disabled}
 			aria-controls={id}
+			type="button"
 			onmousedown={() => startValueChange(-step)}
 			onmouseup={stopValueChange}
 			onmouseleave={stopValueChange}
 			ontouchstart={() => startValueChange(-step)}
 			ontouchend={stopValueChange}
+			onkeydown={(e) => startKeyboardValueChange(e, -step)}
 			{disabled}
 		>
 			<ChevronUp
 				class="size-3.5 rotate-180 scale-150 [&>path]:fill-foreground"
 			/>
 		</button>
-	</span>
+	</div>
 </div>
 
 <style>

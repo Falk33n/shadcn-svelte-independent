@@ -4,7 +4,7 @@
 	let {
 		'class': className,
 		'aria-hidden': ariaHidden = true,
-		ref = $bindable<HTMLOrSVGElement | null>(null),
+		ref = $bindable<SVGElement | null>(null),
 		...props
 	}: IconProps = $props();
 </script>
