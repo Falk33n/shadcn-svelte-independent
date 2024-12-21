@@ -29,7 +29,7 @@
 
 <input
 	class={cn(
-		'mt-1 aspect-square size-4 appearance-none rounded-full border border-primary shadow-sm checked:bg-primary checked:ring-1 checked:ring-ring checked:ring-offset-1 checked:ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background [&:has(:disabled)]:cursor-not-allowed [&:has(:disabled)]:opacity-50',
+		'mt-1 aspect-square size-4 cursor-pointer appearance-none rounded-full border border-primary shadow-sm checked:bg-primary checked:ring-1 checked:ring-ring checked:ring-offset-1 checked:ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background [&:has(:disabled)]:cursor-not-allowed [&:has(:disabled)]:opacity-50',
 		className,
 	)}
 	onchange={(e) => onGroupValueChange(e.currentTarget.value)}

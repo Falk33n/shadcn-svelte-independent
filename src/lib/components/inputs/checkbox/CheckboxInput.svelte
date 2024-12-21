@@ -22,7 +22,10 @@
 </script>
 
 <input
-	class={cn('sr-only', className)}
+	class={cn(
+		'relative mt-1 aspect-square size-4 cursor-pointer appearance-none rounded-sm border border-primary shadow-sm checked:bg-primary checked:before:absolute checked:before:left-1/2 checked:before:top-1/2 checked:before:mt-px checked:before:-translate-x-1/2 checked:before:-translate-y-1/2 checked:before:text-primary-foreground checked:before:content-["✓"] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50',
+		className,
+	)}
 	onchange={(e) => changeChecked(e.currentTarget.checked)}
 	type="checkbox"
 	aria-disabled={disabled}

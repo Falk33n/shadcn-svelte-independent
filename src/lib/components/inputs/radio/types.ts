@@ -1,4 +1,4 @@
-import type { CheckboxProps } from '$components/inputs';
+import type { CheckboxInputProps } from '$components/inputs/checkbox';
 import type { Snippet } from 'svelte';
 import type {
 	HTMLAttributes,
@@ -9,6 +9,8 @@ import type {
 export type RadioProviderProps = {
 	groupName: string;
 	children: Snippet<[]>;
+	groupValue?: string;
+	onGroupValueChange?: (value: string) => void;
 };
 
 export type RadioContextProps = {
@@ -37,7 +39,7 @@ export type RadioLabelProps = Omit<HTMLLabelAttributes, 'children'> & {
 };
 
 export type RadioInputProps = Omit<
-	CheckboxProps,
+	CheckboxInputProps,
 	'defaultValue' | 'defaultChecked' | 'onCheckedChange' | 'name'
 > & {
 	defaultChecked?: boolean;

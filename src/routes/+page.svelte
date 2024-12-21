@@ -1,10 +1,6 @@
 <script>
-	import {
-		Checkbox,
-		FileInput,
-		NumberInput,
-		TextInput,
-	} from '$components/inputs';
+	import { FileInput, NumberInput, TextInput } from '$components/inputs';
+	import { CheckboxInput, CheckboxLabel } from '$components/inputs/checkbox';
 	import {
 		RadioFieldset,
 		RadioInput,
@@ -16,9 +12,13 @@
 
 <div class="flex w-full flex-col gap-8 p-4">
 	<TextInput id="name" />
-	<Checkbox id="agree" />
 	<FileInput id="file-upload" />
 	<NumberInput id="number" />
+
+	<CheckboxLabel>
+		<CheckboxInput id="agree" />
+		Hello I am trying out my Radio component.
+	</CheckboxLabel>
 
 	<RadioProvider groupName="radios">
 		<RadioFieldset>

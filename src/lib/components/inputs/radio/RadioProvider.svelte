@@ -5,18 +5,24 @@
 	} from '$components/inputs/radio';
 	import { setContext } from 'svelte';
 
-	let { groupName = 'radio-group', children }: RadioProviderProps = $props();
+	let {
+		groupName = 'radio-group',
+		children,
+		groupValue,
+		onGroupValueChange,
+	}: RadioProviderProps = $props();
 
-	let groupValue = $state<string>('initial-value');
+	let value = $state<string>('initial-value');
 
-	function onGroupValueChange(newValue: string) {
-		groupValue = newValue;
+	function changeGroupValue(newValue: string) {
+		value = newValue;
 	}
 
 	setContext<RadioContextProps>('radio-wrapper', {
 		groupName,
-		groupValue: () => groupValue,
-		onGroupValueChange: (newValue: string) => onGroupValueChange(newValue),
+		groupValue: () => groupValue || value,
+		onGroupValueChange: (newValue: string) =>
+			onGroupValueChange?.(newValue) || changeGroupValue(newValue),
 	});
 </script>
 
