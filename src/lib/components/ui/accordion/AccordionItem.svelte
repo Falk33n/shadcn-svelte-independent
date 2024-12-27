@@ -23,28 +23,39 @@
 		class: className,
 		value,
 		disabled = false,
+		readonly = false,
 		...restProps
 	}: AccordionItemProps = $props();
 
 	function rootValueIsArray() {
-		if (Array.isArray(context?.getValue())) {
-			return context.getValue()?.includes(value) ? 'open' : 'closed';
+		if (!context) return 'closed';
+
+		if (Array.isArray(context.rootValue)) {
+			return context.rootValue.includes(value) ? 'open' : 'closed';
 		}
 
-		return context?.getValue() === value ? 'open' : 'closed';
+		if (context.rootValue === value) {
+			return 'open';
+		}
+
+		return 'closed';
 	}
 
 	let openState = $state<'open' | 'closed'>(rootValueIsArray());
 
 	const childProps: AccordionItemChildProps = {
 		ref,
-		'data-state': () => openState,
-		'data-disabled': (disabled === true ? true : undefined) as true | undefined,
-		'data-orientation': context.orientation,
+		'aria-readonly': readonly,
+		'aria-disabled': disabled,
 	};
 
+	function getOpenState() {
+		return openState;
+	}
+
 	setContext<AccordionItemContextProps>('accordion-item-context', {
-		getState: () => openState,
+		state: getOpenState(),
+		disabled,
 		value,
 	});
 
@@ -61,12 +72,13 @@
 	<div
 		bind:this={ref}
 		class={cn(
-			'mt-px border-b first:mt-0 focus-within:relative focus-within:z-10',
+			'border-b',
+			disabled && 'cursor-not-allowed opacity-50',
+			readonly && 'opacity-80',
 			className,
 		)}
-		data-state={openState}
-		data-disabled={(disabled === true ? true : undefined) as true | undefined}
-		data-orientation={context.orientation}
+		aria-readonly={readonly}
+		aria-disabled={disabled}
 		{...restProps}
 	>
 		{@render children?.()}

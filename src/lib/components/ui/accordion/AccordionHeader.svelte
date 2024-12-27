@@ -34,11 +34,6 @@
 
 	const childProps: AccordionHeaderChildProps = {
 		ref,
-		'data-state': itemContext.getState(),
-		'data-disabled': (rootContext.disabled === true ? true : undefined) as
-			| true
-			| undefined,
-		'data-orientation': rootContext.orientation,
 	};
 
 	setContext('accordion-header-context', {});
@@ -52,11 +47,6 @@
 	<h3
 		bind:this={ref}
 		class={cn('flex', className)}
-		data-state={itemContext.getState()}
-		data-disabled={(rootContext.disabled === true ? true : undefined) as
-			| true
-			| undefined}
-		data-orientation={rootContext.orientation}
 		{...restProps}
 	>
 		{@render children?.()}

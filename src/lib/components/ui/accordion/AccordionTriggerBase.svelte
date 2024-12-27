@@ -40,32 +40,22 @@
 		ref = $bindable<HTMLButtonElement | null>(null),
 		child,
 		children,
-		'aria-expanded': ariaExpanded = itemContext.getState() === 'open',
-		'class': className,
-		onkeydown = (e) => {
-			if (ref) {
-				onAccordionKeyboardNavigate(e, ref);
-			}
-		},
-		onclick = () => {
-			onAccordionOpenChange(rootContext, itemContext);
-		},
+		class: className,
 		...restProps
 	}: AccordionTriggerBaseProps = $props();
 
 	const childProps: AccordionTriggerBaseChildProps = {
 		ref,
 		'data-accordion': 'trigger' as const,
-		'onclick': onclick,
-		'onkeydown': onkeydown,
+		'onclick': () => onAccordionOpenChange(rootContext, itemContext),
+		'onkeydown': (e) => {
+			if (ref) {
+				onAccordionKeyboardNavigate(e, ref);
+			}
+		},
 		'id': `accordion-trigger-${itemContext.value}-${rootContext.uniqueID}`,
 		'aria-controls': `accordion-content-${itemContext.value}-${rootContext.uniqueID}`,
-		'aria-expanded': !!ariaExpanded,
-		'data-state': itemContext.getState(),
-		'data-disabled': (rootContext.disabled === true ? true : undefined) as
-			| true
-			| undefined,
-		'data-orientation': rootContext.orientation,
+		'aria-expanded': itemContext.state === 'open',
 	};
 
 	setContext('accordion-trigger-base-context', {});
@@ -78,22 +68,25 @@
 {:else}
 	<button
 		bind:this={ref}
-		{onclick}
-		{onkeydown}
+		onclick={() => onAccordionOpenChange(rootContext, itemContext)}
+		onkeydown={(e) => {
+			if (ref) {
+				onAccordionKeyboardNavigate(e, ref);
+			}
+		}}
 		class={cn(
-			'group flex h-[45px] flex-1 items-center justify-between px-5 font-medium leading-none outline-none transition-colors hover:bg-secondary focus-visible:ring-1 focus-visible:ring-ring data-[state="closed"]:bg-background data-[state="open"]:bg-secondary data-[state="closed"]:text-foreground data-[state="open"]:text-secondary-foreground',
+			'flex h-[45px] flex-1 items-center justify-between px-5 font-medium leading-none outline-none transition-colors hover:bg-secondary focus-visible:ring-1 focus-visible:ring-ring',
+			itemContext.state === 'open'
+				? 'bg-secondary text-secondary-foreground'
+				: 'bg-background text-foreground',
 			className,
 		)}
 		id={`accordion-trigger-${itemContext.value}-${rootContext.uniqueID}`}
 		type="button"
-		aria-expanded={ariaExpanded}
+		aria-expanded={itemContext.state === 'open'}
 		aria-controls={`accordion-content-${itemContext.value}-${rootContext.uniqueID}`}
-		data-state={itemContext.getState()}
-		data-disabled={(rootContext.disabled === true ? true : undefined) as
-			| true
-			| undefined}
-		data-orientation={rootContext.orientation}
-		data-accordion={'trigger' as const}
+		disabled={itemContext.disabled || rootContext.disabled}
+		data-accordion="trigger"
 		{...restProps}
 	>
 		{@render children?.()}

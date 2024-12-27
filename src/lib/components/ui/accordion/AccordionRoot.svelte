@@ -16,8 +16,9 @@
 		defaultValue = type === 'multiple' ? [] : undefined,
 		value = defaultValue ?? (type === 'multiple' ? [] : undefined),
 		onValueChange,
-		collapsible = false,
+		collapsible = true,
 		disabled = false,
+		readonly = false,
 		dir = 'ltr',
 		orientation = 'vertical',
 		...restProps
@@ -43,34 +44,50 @@
 
 	const childProps: AccordionRootChildProps = {
 		ref,
-		'data-orientation': orientation,
+		dir,
+		'aria-readonly': readonly,
+		'aria-disabled': disabled,
+		'aria-orientation': orientation,
 		'data-accordion': 'root' as const,
 	};
 
 	let reactiveValue = $state<string | string[] | undefined>(value);
 
+	function getValue() {
+		return reactiveValue;
+	}
+
 	setContext<AccordionRootContextProps>('accordion-root-context', {
 		type,
-		getValue: () => reactiveValue,
-		setValue: (value: string | string[]) => {
-			if (Array.isArray(reactiveValue) && typeof value === 'string') {
-				if (reactiveValue.includes(value)) {
-					reactiveValue = reactiveValue.filter((item) => item !== value);
+		rootValue: getValue(),
+		changeValue: (value: string | string[]) => {
+			if (collapsible === false) {
+				if (Array.isArray(reactiveValue) && typeof value === 'string') {
+					if (!reactiveValue.includes(value)) {
+						reactiveValue = [...reactiveValue, value];
+					}
 				} else {
-					reactiveValue = [...reactiveValue, value];
+					reactiveValue = value;
 				}
 			} else {
-				reactiveValue = value;
+				if (Array.isArray(reactiveValue) && typeof value === 'string') {
+					if (reactiveValue.includes(value)) {
+						reactiveValue = reactiveValue.filter((item) => item !== value);
+					} else {
+						reactiveValue = [...reactiveValue, value];
+					}
+				} else {
+					reactiveValue = value;
+				}
 			}
 
 			onValueChange?.(value);
 		},
+		disabled,
 		defaultValue,
 		onValueChange,
 		collapsible,
-		disabled,
 		orientation,
-		dir,
 		uniqueID: generateID(),
 	});
 </script>
@@ -82,12 +99,17 @@
 {:else}
 	<div
 		bind:this={ref}
+		{dir}
 		class={cn(
-			'w-[275px] rounded-md bg-background text-foreground sm:w-[400px]',
+			'w-[300px] bg-background text-foreground',
+			disabled && 'cursor-not-allowed opacity-50',
+			readonly && 'opacity-80',
 			className,
 		)}
-		data-orientation={orientation}
-		data-accordion={'root' as const}
+		aria-readonly={readonly}
+		aria-disabled={disabled}
+		aria-orientation={orientation}
+		data-accordion="root"
 		{...restProps}
 	>
 		{@render children?.()}
