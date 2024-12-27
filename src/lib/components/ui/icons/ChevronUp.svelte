@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { IconProps } from '$components/icons';
+	import type { IconProps } from '$components/ui/icons';
 
 	let {
 		'class': className,
 		'aria-hidden': ariaHidden = true,
-		ref = $bindable<HTMLOrSVGElement | null>(null),
+		ref = $bindable(null),
 		...props
 	}: IconProps = $props();
 </script>

@@ -1,45 +1,25 @@
-<script>
+<script lang="ts">
 	import {
-		Checkbox,
-		FileInput,
-		NumberInput,
-		TextInput,
-	} from '$components/inputs';
-	import {
-		RadioFieldset,
-		RadioInput,
-		RadioLabel,
-		RadioLegend,
-		RadioProvider,
-	} from '$components/inputs/radio';
+		Accordion,
+		AccordionItem,
+		AccordionTrigger,
+	} from '../lib/components/ui/accordion';
+	import AccordionContent from '../lib/components/ui/accordion/AccordionContent.svelte';
 </script>
 
-<div class="flex w-full flex-col gap-8 p-4">
-	<TextInput id="name" />
-	<Checkbox id="agree" />
-	<FileInput id="file-upload" />
-	<NumberInput id="number" />
-
-	<RadioProvider groupName="radios">
-		<RadioFieldset>
-			<RadioLegend srOnly>Radio Group</RadioLegend>
-
-			<RadioLabel>
-				<RadioInput id="radio-1" />
-				Hello I am trying out my Radio component.
-			</RadioLabel>
-
-			<RadioLabel>
-				<RadioInput id="radio-2" />
-			</RadioLabel>
-
-			<RadioLabel>
-				<RadioInput id="radio-3" />
-			</RadioLabel>
-
-			<RadioLabel>
-				<RadioInput id="radio-4" />
-			</RadioLabel>
-		</RadioFieldset>
-	</RadioProvider>
+<div class="flex h-screen w-full justify-center gap-8 p-4">
+	<Accordion type="multiple">
+		<AccordionItem value="item-1">
+			<AccordionTrigger>Trigger1</AccordionTrigger>
+			<AccordionContent>This is the content</AccordionContent>
+		</AccordionItem>
+		<AccordionItem value="item-2">
+			<AccordionTrigger>Trigger2</AccordionTrigger>
+			<AccordionContent>This is the content</AccordionContent>
+		</AccordionItem>
+		<AccordionItem value="item-3">
+			<AccordionTrigger>Trigger3</AccordionTrigger>
+			<AccordionContent>This is the content</AccordionContent>
+		</AccordionItem>
+	</Accordion>
 </div>
