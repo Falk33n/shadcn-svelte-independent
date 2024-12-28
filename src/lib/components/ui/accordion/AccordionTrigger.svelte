@@ -48,7 +48,7 @@
 		},
 		'id': `accordion-trigger-${itemContext.value}-${rootContext.uniqueID}`,
 		'aria-controls': `accordion-content-${itemContext.value}-${rootContext.uniqueID}`,
-		'aria-expanded': itemContext.state === 'open',
+		'aria-expanded': itemContext.getItemState() === 'open',
 	};
 </script>
 

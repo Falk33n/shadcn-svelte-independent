@@ -55,7 +55,7 @@
 		bind:ref
 		class={cn(
 			'size-5 transition-all duration-300 ease-out',
-			itemContext.state === 'open'
+			itemContext.getItemState() === 'open'
 				? '[&>path]:fill-secondary-foreground'
 				: 'rotate-180 [&>path]:fill-foreground',
 			className,

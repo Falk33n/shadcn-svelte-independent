@@ -51,33 +51,29 @@
 		'data-accordion': 'root' as const,
 	};
 
-	let reactiveValue = $state<string | string[] | undefined>(value);
-
-	function getValue() {
-		return reactiveValue;
-	}
+	let rootValue = $state<string | string[] | undefined>(value);
 
 	setContext<AccordionRootContextProps>('accordion-root-context', {
 		type,
-		rootValue: getValue(),
-		changeValue: (value: string | string[]) => {
+		getRootValue: () => rootValue,
+		setRootValue: (value: string | string[]) => {
 			if (collapsible === false) {
-				if (Array.isArray(reactiveValue) && typeof value === 'string') {
-					if (!reactiveValue.includes(value)) {
-						reactiveValue = [...reactiveValue, value];
+				if (Array.isArray(rootValue) && typeof value === 'string') {
+					if (!rootValue.includes(value)) {
+						rootValue = [...rootValue, value];
 					}
 				} else {
-					reactiveValue = value;
+					rootValue = value;
 				}
 			} else {
-				if (Array.isArray(reactiveValue) && typeof value === 'string') {
-					if (reactiveValue.includes(value)) {
-						reactiveValue = reactiveValue.filter((item) => item !== value);
+				if (Array.isArray(rootValue) && typeof value === 'string') {
+					if (rootValue.includes(value)) {
+						rootValue = rootValue.filter((item) => item !== value);
 					} else {
-						reactiveValue = [...reactiveValue, value];
+						rootValue = [...rootValue, value];
 					}
 				} else {
-					reactiveValue = value;
+					rootValue = value;
 				}
 			}
 

@@ -33,7 +33,7 @@
 		...restProps
 	}: AccordionContentProps = $props();
 
-	let isHidden = $state(itemContext.state !== 'open');
+	let isHidden = $state(itemContext.getItemState() === 'closed');
 
 	function getIsHidden() {
 		return isHidden;
@@ -55,7 +55,7 @@
 		if (!ref) return;
 		onAccordionHeightChange(ref, isHidden);
 
-		if (itemContext.state === 'closed') {
+		if (itemContext.getItemState() === 'closed') {
 			if (timeoutId) clearTimeout(timeoutId);
 			timeoutId = setTimeout(() => {
 				isHidden = true;
@@ -76,7 +76,7 @@
 		bind:this={ref}
 		class={cn(
 			'overflow-hidden bg-background text-sm text-foreground transition-[height] duration-300 ease-out',
-			itemContext.state === 'open'
+			itemContext.getItemState() === 'open'
 				? 'animate-accordion-down'
 				: 'animate-accordion-up',
 		)}

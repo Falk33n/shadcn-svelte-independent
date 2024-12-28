@@ -55,7 +55,7 @@
 		},
 		'id': `accordion-trigger-${itemContext.value}-${rootContext.uniqueID}`,
 		'aria-controls': `accordion-content-${itemContext.value}-${rootContext.uniqueID}`,
-		'aria-expanded': itemContext.state === 'open',
+		'aria-expanded': itemContext.getItemState() === 'open',
 	};
 
 	setContext('accordion-trigger-base-context', {});
@@ -76,14 +76,14 @@
 		}}
 		class={cn(
 			'flex h-[45px] flex-1 items-center justify-between px-5 font-medium leading-none outline-none transition-colors hover:bg-secondary focus-visible:ring-1 focus-visible:ring-ring',
-			itemContext.state === 'open'
+			itemContext.getItemState() === 'open'
 				? 'bg-secondary text-secondary-foreground'
 				: 'bg-background text-foreground',
 			className,
 		)}
 		id={`accordion-trigger-${itemContext.value}-${rootContext.uniqueID}`}
 		type="button"
-		aria-expanded={itemContext.state === 'open'}
+		aria-expanded={itemContext.getItemState() === 'open'}
 		aria-controls={`accordion-content-${itemContext.value}-${rootContext.uniqueID}`}
 		disabled={itemContext.disabled || rootContext.disabled}
 		data-accordion="trigger"

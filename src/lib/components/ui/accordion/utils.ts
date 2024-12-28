@@ -11,43 +11,47 @@ export function onAccordionOpenChange(
 
 	if (rootContext.type === 'single') {
 		if (rootContext.collapsible === false) {
-			if (rootContext.rootValue !== itemContext.value) {
-				rootContext.changeValue(itemContext.value);
+			if (rootContext.getRootValue() !== itemContext.value) {
+				rootContext.setRootValue(itemContext.value);
 			}
 		} else {
-			rootContext.changeValue(
-				rootContext.rootValue === itemContext.value ? '' : itemContext.value,
+			rootContext.setRootValue(
+				rootContext.getRootValue() === itemContext.value
+					? ''
+					: itemContext.value,
 			);
 		}
 	} else if (
 		rootContext.type === 'multiple' &&
-		Array.isArray(rootContext.rootValue)
+		Array.isArray(rootContext.getRootValue())
 	) {
 		if (rootContext.collapsible === false) {
-			if (!rootContext.rootValue.includes(itemContext.value)) {
-				rootContext.changeValue([
-					...(rootContext.rootValue as string[]),
+			if (!rootContext.getRootValue()?.includes(itemContext.value)) {
+				rootContext.setRootValue([
+					...(rootContext.getRootValue() as string[]),
 					itemContext.value,
 				]);
 			}
 		} else {
-			if (rootContext.rootValue.includes(itemContext.value)) {
-				rootContext.changeValue(
-					(rootContext.rootValue as string[]).filter(
+			if (rootContext.getRootValue()?.includes(itemContext.value)) {
+				rootContext.setRootValue(
+					(rootContext.getRootValue() as string[]).filter(
 						(val) => val !== itemContext.value,
 					),
 				);
 			} else {
-				rootContext.changeValue([
-					...(rootContext.rootValue as string[]),
+				rootContext.setRootValue([
+					...(rootContext.getRootValue() as string[]),
 					itemContext.value,
 				]);
 			}
 		}
 	}
 
-	if (rootContext.rootValue !== undefined) {
-		rootContext.onValueChange?.(rootContext.rootValue as string | string[]);
+	if (rootContext.getRootValue() !== undefined) {
+		rootContext.onValueChange?.(
+			rootContext.getRootValue() as string | string[],
+		);
 	}
 }
 

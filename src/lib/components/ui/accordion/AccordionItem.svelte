@@ -30,18 +30,18 @@
 	function rootValueIsArray() {
 		if (!context) return 'closed';
 
-		if (Array.isArray(context.rootValue)) {
-			return context.rootValue.includes(value) ? 'open' : 'closed';
+		if (Array.isArray(context.getRootValue())) {
+			return context.getRootValue()?.includes(value) ? 'open' : 'closed';
 		}
 
-		if (context.rootValue === value) {
+		if (context.getRootValue() === value) {
 			return 'open';
 		}
 
 		return 'closed';
 	}
 
-	let openState = $state<'open' | 'closed'>(rootValueIsArray());
+	let itemState = $state<'open' | 'closed'>(rootValueIsArray());
 
 	const childProps: AccordionItemChildProps = {
 		ref,
@@ -49,18 +49,14 @@
 		'aria-disabled': disabled,
 	};
 
-	function getOpenState() {
-		return openState;
-	}
-
 	setContext<AccordionItemContextProps>('accordion-item-context', {
-		state: getOpenState(),
+		getItemState: () => itemState,
 		disabled,
 		value,
 	});
 
 	$effect(() => {
-		openState = rootValueIsArray();
+		itemState = rootValueIsArray();
 	});
 </script>
 

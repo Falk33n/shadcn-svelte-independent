@@ -9,13 +9,13 @@ import type {
 
 export type AccordionRootContextProps = {
 	type: 'single' | 'multiple';
-	rootValue: string | string[] | undefined;
+	getRootValue: () => string | string[] | undefined;
 	collapsible: boolean;
 	orientation: 'horizontal' | 'vertical';
 	disabled: boolean;
 	uniqueID: string;
 	defaultValue?: string | string[];
-	changeValue: (value: string | string[]) => void;
+	setRootValue: (value: string | string[]) => void;
 	onValueChange?: (value: string | string[]) => void;
 };
 
@@ -46,7 +46,7 @@ export type AccordionRootProps = Omit<
 };
 
 export type AccordionItemContextProps = {
-	state: 'open' | 'closed';
+	getItemState: () => 'open' | 'closed';
 	disabled: boolean;
 	value: string;
 };
