@@ -33,32 +33,22 @@
 		ref = $bindable<HTMLButtonElement | null>(null),
 		child,
 		children,
-		'aria-expanded': ariaExpanded = itemContext.getState() === 'open',
-		'class': className,
-		onkeydown = (e) => {
-			if (ref) {
-				onAccordionKeyboardNavigate(e, ref);
-			}
-		},
-		onclick = () => {
-			onAccordionOpenChange(rootContext, itemContext);
-		},
+		class: className,
 		...restProps
 	}: AccordionTriggerBaseProps = $props();
 
 	const childProps: AccordionTriggerBaseChildProps = {
 		ref,
 		'data-accordion': 'trigger' as const,
-		'onclick': onclick,
-		'onkeydown': onkeydown,
+		'onclick': () => onAccordionOpenChange(rootContext, itemContext),
+		'onkeydown': (e) => {
+			if (ref) {
+				onAccordionKeyboardNavigate(e, ref);
+			}
+		},
 		'id': `accordion-trigger-${itemContext.value}-${rootContext.uniqueID}`,
 		'aria-controls': `accordion-content-${itemContext.value}-${rootContext.uniqueID}`,
-		'aria-expanded': !!ariaExpanded,
-		'data-state': itemContext.getState(),
-		'data-disabled': (rootContext.disabled === true ? true : undefined) as
-			| true
-			| undefined,
-		'data-orientation': rootContext.orientation,
+		'aria-expanded': itemContext.state === 'open',
 	};
 </script>
 

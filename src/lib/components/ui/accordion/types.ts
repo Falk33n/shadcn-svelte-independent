@@ -9,29 +9,29 @@ import type {
 
 export type AccordionRootContextProps = {
 	type: 'single' | 'multiple';
-	getValue: () => string | string[] | undefined;
-	setValue: (value: string | string[]) => void;
+	rootValue: string | string[] | undefined;
 	collapsible: boolean;
-	disabled: boolean;
-	dir: 'ltr' | 'rtl';
 	orientation: 'horizontal' | 'vertical';
-	defaultValue?: string | string[];
-	onValueChange?: (value: string | string[]) => void;
+	disabled: boolean;
 	uniqueID: string;
-};
-
-export type AccordionItemContextProps = {
-	getState: () => 'open' | 'closed';
-	value: string;
+	defaultValue?: string | string[];
+	changeValue: (value: string | string[]) => void;
+	onValueChange?: (value: string | string[]) => void;
 };
 
 export type AccordionRootChildProps = {
 	'ref': HTMLDivElement | null;
-	'data-orientation': 'horizontal' | 'vertical';
+	'dir': 'ltr' | 'rtl';
+	'aria-readonly': boolean;
+	'aria-disabled': boolean;
+	'aria-orientation': 'horizontal' | 'vertical';
 	'data-accordion': 'root';
 };
 
-export type AccordionRootProps = Omit<HTMLAttributes<HTMLDivElement>, 'dir'> & {
+export type AccordionRootProps = Omit<
+	HTMLAttributes<HTMLDivElement>,
+	'dir' | 'aria-orientation' | 'aria-disabled' | 'aria-readonly'
+> & {
 	type: 'single' | 'multiple';
 	ref?: HTMLDivElement | null;
 	child?: Snippet<[{ props: AccordionRootChildProps }]>;
@@ -40,32 +40,42 @@ export type AccordionRootProps = Omit<HTMLAttributes<HTMLDivElement>, 'dir'> & {
 	onValueChange?: (value: string | string[]) => void;
 	collapsible?: boolean;
 	disabled?: boolean;
+	readonly?: boolean;
 	dir?: 'ltr' | 'rtl';
 	orientation?: 'horizontal' | 'vertical';
 };
 
-export type AccordionItemChildProps = {
-	'ref': HTMLDivElement | null;
-	'data-state': () => 'open' | 'closed';
-	'data-disabled'?: true;
-	'data-orientation': 'horizontal' | 'vertical';
+export type AccordionItemContextProps = {
+	state: 'open' | 'closed';
+	disabled: boolean;
+	value: string;
 };
 
-export type AccordionItemProps = HTMLAttributes<HTMLDivElement> & {
+export type AccordionItemChildProps = {
+	'ref': HTMLDivElement | null;
+	'aria-readonly': boolean;
+	'aria-disabled': boolean;
+};
+
+export type AccordionItemProps = Omit<
+	HTMLAttributes<HTMLDivElement>,
+	'aria-disabled' | 'aria-readonly' | 'dir' | 'aria-orientation'
+> & {
 	value: string;
 	ref?: HTMLDivElement | null;
 	child?: Snippet<[{ props: AccordionItemChildProps }]>;
 	disabled?: boolean;
+	readonly?: boolean;
 };
 
 export type AccordionHeaderChildProps = {
-	'ref': HTMLHeadingElement | null;
-	'data-state': 'open' | 'closed';
-	'data-disabled'?: true;
-	'data-orientation': 'horizontal' | 'vertical';
+	ref: HTMLHeadingElement | null;
 };
 
-export type AccordionHeaderProps = HTMLAttributes<HTMLHeadingElement> & {
+export type AccordionHeaderProps = Omit<
+	HTMLAttributes<HTMLHeadingElement>,
+	'dir' | 'aria-orientation' | 'aria-disabled' | 'aria-readonly'
+> & {
 	ref?: HTMLHeadingElement | null;
 	child?: Snippet<[{ props: AccordionHeaderChildProps }]>;
 };
@@ -78,14 +88,21 @@ export type AccordionTriggerBaseChildProps = {
 	'aria-controls': string;
 	'aria-expanded': boolean;
 	'id': string;
-	'data-state': 'open' | 'closed';
-	'data-disabled'?: true;
-	'data-orientation': 'horizontal' | 'vertical';
 };
 
 export type AccordionTriggerBaseProps = Omit<
 	HTMLButtonAttributes,
-	'aria-controls' | 'id' | 'type'
+	| 'aria-controls'
+	| 'id'
+	| 'type'
+	| 'disabled'
+	| 'aria-disabled'
+	| 'aria-readonly'
+	| 'aria-expanded'
+	| 'dir'
+	| 'aria-orientation'
+	| 'onclick'
+	| 'onkeydown'
 > & {
 	ref?: HTMLButtonElement | null;
 	child?: Snippet<[{ props: AccordionTriggerBaseChildProps }]>;
@@ -96,7 +113,10 @@ export type AccordionIndicatorChildProps = {
 	'aria-hidden': boolean;
 };
 
-export type AccordionIndicatorProps = SVGAttributes<SVGElement> & {
+export type AccordionIndicatorProps = Omit<
+	SVGAttributes<SVGElement>,
+	'aria-hidden' | 'dir' | 'aria-orientation' | 'aria-disabled' | 'aria-readonly'
+> & {
 	ref?: SVGElement | null;
 	child?: Snippet<[{ props: AccordionIndicatorChildProps }]>;
 };
@@ -105,17 +125,22 @@ export type AccordionContentChildProps = {
 	'ref': HTMLDivElement | null;
 	'style': string;
 	'role': 'region';
-	'aria-labelledby': string;
 	'id': string;
-	'hidden': true | undefined;
-	'data-state': 'open' | 'closed';
-	'data-disabled'?: true;
-	'data-orientation': 'horizontal' | 'vertical';
+	'hidden': boolean;
+	'aria-labelledby': string;
 };
 
 export type AccordionContentProps = Omit<
 	HTMLAttributes<HTMLDivElement>,
-	'role' | 'hidden' | 'aria-labelledby' | 'id'
+	| 'role'
+	| 'hidden'
+	| 'aria-labelledby'
+	| 'id'
+	| 'style'
+	| 'dir'
+	| 'aria-orientation'
+	| 'aria-disabled'
+	| 'aria-readonly'
 > & {
 	ref?: HTMLDivElement | null;
 	child?: Snippet<[{ props: AccordionContentChildProps }]>;

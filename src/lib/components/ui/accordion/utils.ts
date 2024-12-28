@@ -10,29 +10,44 @@ export function onAccordionOpenChange(
 	if (!rootContext || !itemContext) return;
 
 	if (rootContext.type === 'single') {
-		rootContext.setValue(
-			rootContext.getValue() === itemContext.value ? '' : itemContext.value,
-		);
+		if (rootContext.collapsible === false) {
+			if (rootContext.rootValue !== itemContext.value) {
+				rootContext.changeValue(itemContext.value);
+			}
+		} else {
+			rootContext.changeValue(
+				rootContext.rootValue === itemContext.value ? '' : itemContext.value,
+			);
+		}
 	} else if (
 		rootContext.type === 'multiple' &&
-		Array.isArray(rootContext.getValue())
+		Array.isArray(rootContext.rootValue)
 	) {
-		if (rootContext.getValue()?.includes(itemContext.value)) {
-			rootContext.setValue(
-				(rootContext.getValue() as string[]).filter(
-					(val) => val !== itemContext.value,
-				),
-			);
+		if (rootContext.collapsible === false) {
+			if (!rootContext.rootValue.includes(itemContext.value)) {
+				rootContext.changeValue([
+					...(rootContext.rootValue as string[]),
+					itemContext.value,
+				]);
+			}
 		} else {
-			rootContext.setValue([
-				...(rootContext.getValue() as string[]),
-				itemContext.value,
-			]);
+			if (rootContext.rootValue.includes(itemContext.value)) {
+				rootContext.changeValue(
+					(rootContext.rootValue as string[]).filter(
+						(val) => val !== itemContext.value,
+					),
+				);
+			} else {
+				rootContext.changeValue([
+					...(rootContext.rootValue as string[]),
+					itemContext.value,
+				]);
+			}
 		}
 	}
 
-	if (rootContext.getValue() !== undefined) {
-		rootContext.onValueChange?.(rootContext.getValue() as string | string[]);
+	if (rootContext.rootValue !== undefined) {
+		rootContext.onValueChange?.(rootContext.rootValue as string | string[]);
 	}
 }
 
@@ -66,7 +81,10 @@ export function onAccordionKeyboardNavigate(
 	}
 }
 
-export function onAccordionHeightChange(ref: HTMLDivElement, isHidden?: true) {
+export function onAccordionHeightChange(
+	ref: HTMLDivElement,
+	isHidden: boolean,
+) {
 	const contentHeight = !isHidden ? `${ref.scrollHeight}px` : '0px';
 	ref.style.setProperty('--accordion-content-height', contentHeight);
 }

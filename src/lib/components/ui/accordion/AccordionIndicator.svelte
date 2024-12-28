@@ -38,14 +38,13 @@
 	let {
 		ref = $bindable<SVGElement | null>(null),
 		child,
-		'class': className,
-		'aria-hidden': ariaHidden = true,
+		class: className,
 		...restProps
 	}: AccordionIndicatorProps = $props();
 
 	const childProps: AccordionIndicatorChildProps = {
 		ref,
-		'aria-hidden': !!ariaHidden,
+		'aria-hidden': true,
 	};
 </script>
 
@@ -55,10 +54,13 @@
 	<ChevronUp
 		bind:ref
 		class={cn(
-			'size-5 transition-all duration-300 group-data-[state="closed"]:rotate-180 group-data-[state="open"]:rotate-0 group-data-[state="closed"]:[&>path]:fill-foreground group-data-[state="open"]:[&>path]:fill-secondary-foreground',
+			'size-5 transition-all duration-300 ease-out',
+			itemContext.state === 'open'
+				? '[&>path]:fill-secondary-foreground'
+				: 'rotate-180 [&>path]:fill-foreground',
 			className,
 		)}
-		aria-hidden={ariaHidden}
+		aria-hidden={true}
 		{...restProps}
 	/>
 {/if}
