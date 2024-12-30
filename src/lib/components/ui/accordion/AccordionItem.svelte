@@ -1,84 +1,80 @@
-<script lang="ts">
+<script
+	lang="ts"
+	module
+>
 	import type {
-		AccordionItemChildProps,
 		AccordionItemContextProps,
-		AccordionItemProps,
 		AccordionRootContextProps,
 	} from '$components/ui/accordion';
-	import { cn } from '$utils';
-	import { getContext, setContext } from 'svelte';
+	import type { HTMLDivElementReference, ValidateContextProps } from '$types';
+	import { cn, validateContext } from '$utils';
+	import { setContext, type Snippet } from 'svelte';
+	import type { HTMLAttributes } from 'svelte/elements';
 
-	const context: AccordionRootContextProps | undefined = getContext(
-		'accordion-root-context',
-	);
+	export type AccordionItemChildProps = {
+		props: HTMLAttributes<HTMLDivElement> & { ref: HTMLDivElementReference };
+	};
 
-	if (!context) {
-		throw new Error('AccordionItem must be used within an Accordion');
+	export type AccordionItemProps = HTMLAttributes<HTMLDivElement> & {
+		value: string;
+		ref?: HTMLDivElementReference;
+		child?: Snippet<[AccordionItemChildProps]>;
+	};
+
+	type IsItemOpenState = { value: boolean };
+	type RootValueState = { value?: string | string[] };
+
+	const rootContextSettings: ValidateContextProps<AccordionRootContextProps> = {
+		key: 'accordion-root-context',
+		source: 'AccordionRoot',
+		target: 'AccordionItem',
+	};
+
+	function setIsItemOpen(
+		isItemOpen: IsItemOpenState,
+		itemValue: string,
+		rootValue: RootValueState,
+	) {
+		isItemOpen.value = Array.isArray(rootValue.value)
+			? rootValue.value.includes(itemValue)
+			: rootValue.value === itemValue;
 	}
+</script>
+
+<script lang="ts">
+	const { rootValue } = validateContext(rootContextSettings);
+
+	let isItemOpen = $state({ value: false });
 
 	let {
-		ref = $bindable<HTMLDivElement | null>(null),
+		ref = $bindable<HTMLDivElementReference>(null),
 		child,
 		children,
 		class: className,
-		value,
-		disabled = false,
-		readonly = false,
+		value: itemValue,
 		...restProps
 	}: AccordionItemProps = $props();
 
-	function rootValueIsArray() {
-		if (!context) return 'closed';
-
-		if (Array.isArray(context.rootValue)) {
-			return context.rootValue.includes(value) ? 'open' : 'closed';
-		}
-
-		if (context.rootValue === value) {
-			return 'open';
-		}
-
-		return 'closed';
-	}
-
-	let openState = $state<'open' | 'closed'>(rootValueIsArray());
-
-	const childProps: AccordionItemChildProps = {
-		ref,
-		'aria-readonly': readonly,
-		'aria-disabled': disabled,
-	};
-
-	function getOpenState() {
-		return openState;
-	}
-
 	setContext<AccordionItemContextProps>('accordion-item-context', {
-		state: getOpenState(),
-		disabled,
-		value,
+		isItemOpen,
+		itemValue,
 	});
 
 	$effect(() => {
-		openState = rootValueIsArray();
+		setIsItemOpen(isItemOpen, itemValue, rootValue);
 	});
+
+	const childProps: AccordionItemChildProps = {
+		props: { ref, ...restProps },
+	};
 </script>
 
 {#if child}
-	{@render child({
-		props: childProps,
-	})}
+	{@render child(childProps)}
 {:else}
 	<div
 		bind:this={ref}
-		class={cn(
-			'border-b',
-			disabled && 'cursor-not-allowed opacity-50',
-			readonly && 'opacity-80',
-			className,
-		)}
-		aria-readonly={readonly}
-		aria-disabled={disabled}
+		class={className ? cn(className) : undefined}
 		{...restProps}
 	>
 		{@render children?.()}
