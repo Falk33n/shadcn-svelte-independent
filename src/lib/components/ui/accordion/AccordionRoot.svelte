@@ -1,12 +1,65 @@
-<script lang="ts">
-	import type {
-		AccordionRootChildProps,
-		AccordionRootContextProps,
-		AccordionRootProps,
-	} from '$components/ui/accordion';
+<script
+	lang="ts"
+	module
+>
+	import type { AccordionRootContextProps } from '$components/ui/accordion';
+	import type { HTMLDivElementReference } from '$types';
 	import { cn, generateID } from '$utils';
-	import { setContext } from 'svelte';
+	import { setContext, type Snippet } from 'svelte';
+	import type { HTMLAttributes } from 'svelte/elements';
 
+	export type AccordionRootAttributes = Omit<
+		HTMLAttributes<HTMLDivElement>,
+		'dir'
+	>;
+
+	export type AccordionRootChildProps = {
+		props: AccordionRootAttributes & {
+			'ref': HTMLDivElementReference;
+			'dir': 'ltr' | 'rtl';
+			'data-accordion': 'root';
+		};
+	};
+
+	export type AccordionRootProps = AccordionRootAttributes & {
+		type: 'single' | 'multiple';
+		ref?: HTMLDivElementReference;
+		child?: Snippet<[AccordionRootChildProps]>;
+		value?: string | string[];
+		defaultValue?: string | string[];
+		onValueChange?: (value: string | string[]) => void;
+		isCollapsible?: boolean;
+		dir?: 'ltr' | 'rtl';
+	};
+
+	function validateValues(
+		type: 'single' | 'multiple',
+		defaultValue?: string | string[],
+		value?: string | string[],
+	) {
+		if (type === 'single') {
+			if (Array.isArray(defaultValue)) {
+				throw new Error(
+					'"defaultValue" must be a string when type is "single"',
+				);
+			} else if (Array.isArray(value)) {
+				throw new Error('"value" must be a string when type is "single"');
+			}
+
+			return;
+		}
+
+		if (!Array.isArray(defaultValue)) {
+			throw new Error(
+				'"defaultValue" must be a string[] when type is "multiple"',
+			);
+		} else if (!Array.isArray(value)) {
+			throw new Error('"value" must be a string[] when type is "multiple"');
+		}
+	}
+</script>
+
+<script lang="ts">
 	let {
 		ref = $bindable<HTMLDivElement | null>(null),
 		child,
@@ -16,95 +69,35 @@
 		defaultValue = type === 'multiple' ? [] : undefined,
 		value = defaultValue ?? (type === 'multiple' ? [] : undefined),
 		onValueChange,
-		collapsible = true,
-		disabled = false,
-		readonly = false,
+		isCollapsible = true,
 		dir = 'ltr',
-		orientation = 'vertical',
 		...restProps
 	}: AccordionRootProps = $props();
 
-	if (type === 'single' && Array.isArray(defaultValue)) {
-		throw new Error('"defaultValue" must be a string when type is "single"');
-	}
+	validateValues(type, defaultValue, value);
 
-	if (type === 'single' && Array.isArray(value)) {
-		throw new Error('"value" must be a string when type is "single"');
-	}
-
-	if (type === 'multiple' && !Array.isArray(defaultValue)) {
-		throw new Error(
-			'"defaultValue" must be a string[] when type is "multiple"',
-		);
-	}
-
-	if (type === 'multiple' && !Array.isArray(value)) {
-		throw new Error('"value" must be a string[] when type is "multiple"');
-	}
-
-	const childProps: AccordionRootChildProps = {
-		ref,
-		dir,
-		'aria-readonly': readonly,
-		'aria-disabled': disabled,
-		'aria-orientation': orientation,
-		'data-accordion': 'root' as const,
-	};
-
-	let rootValue = $state<string | string[] | undefined>(value);
+	let rootValue = $state<{ value: string | string[] | undefined }>({ value });
 
 	setContext<AccordionRootContextProps>('accordion-root-context', {
-		type,
-		getRootValue: () => rootValue,
-		setRootValue: (value: string | string[]) => {
-			if (collapsible === false) {
-				if (Array.isArray(rootValue) && typeof value === 'string') {
-					if (!rootValue.includes(value)) {
-						rootValue = [...rootValue, value];
-					}
-				} else {
-					rootValue = value;
-				}
-			} else {
-				if (Array.isArray(rootValue) && typeof value === 'string') {
-					if (rootValue.includes(value)) {
-						rootValue = rootValue.filter((item) => item !== value);
-					} else {
-						rootValue = [...rootValue, value];
-					}
-				} else {
-					rootValue = value;
-				}
-			}
-
-			onValueChange?.(value);
-		},
-		disabled,
-		defaultValue,
-		onValueChange,
-		collapsible,
-		orientation,
-		uniqueID: generateID(),
+		rootType: type,
+		rootValue,
+		isCollapsible,
+		rootID: generateID(),
+		rootOnValueChange: onValueChange,
 	});
+
+	const childProps: AccordionRootChildProps = {
+		props: { ref, dir, 'data-accordion': 'root', ...restProps },
+	};
 </script>
 
 {#if child}
-	{@render child({
-		props: childProps,
-	})}
+	{@render child(childProps)}
 {:else}
 	<div
 		bind:this={ref}
 		{dir}
-		class={cn(
-			'w-[300px] bg-background text-foreground',
-			disabled && 'cursor-not-allowed opacity-50',
-			readonly && 'opacity-80',
-			className,
-		)}
-		aria-readonly={readonly}
-		aria-disabled={disabled}
-		aria-orientation={orientation}
+		class={cn('h-fit w-[300px]', className)}
 		data-accordion="root"
 		{...restProps}
 	>

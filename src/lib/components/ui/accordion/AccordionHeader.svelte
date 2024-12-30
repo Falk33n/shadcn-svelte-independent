@@ -1,54 +1,80 @@
-<script lang="ts">
+<script
+	lang="ts"
+	module
+>
 	import type {
-		AccordionHeaderChildProps,
-		AccordionHeaderProps,
+		EmptyContext,
+		HTMLDivElementReference,
+		ValidateContextProps,
+	} from '$types';
+	import { cn, validateContext } from '$utils';
+	import { setContext, type Snippet } from 'svelte';
+	import type { HTMLAttributes } from 'svelte/elements';
+	import type {
 		AccordionItemContextProps,
 		AccordionRootContextProps,
-	} from '$components/ui/accordion';
-	import { cn } from '$utils';
-	import { getContext, setContext } from 'svelte';
+	} from './types';
 
-	const rootContext: AccordionRootContextProps | undefined = getContext(
-		'accordion-root-context',
-	);
+	export type AccordionHeaderAttributes = Omit<
+		HTMLAttributes<HTMLDivElement>,
+		'role'
+	>;
 
-	if (!rootContext) {
-		throw new Error('AccordionHeader must be used within an Accordion');
-	}
+	export type AccordionHeaderChildProps = {
+		props: AccordionHeaderAttributes & {
+			ref: HTMLDivElementReference;
+			role: 'heading';
+		};
+	};
 
-	const itemContext: AccordionItemContextProps | undefined = getContext(
-		'accordion-item-context',
-	);
+	export type AccordionHeaderProps = AccordionHeaderAttributes & {
+		ref?: HTMLDivElementReference;
+		child?: Snippet<[AccordionHeaderChildProps]>;
+	};
 
-	if (!itemContext) {
-		throw new Error('AccordionHeader must be used within an AccordionItem');
-	}
+	const rootContextSettings: ValidateContextProps<AccordionRootContextProps> = {
+		key: 'accordion-root-context',
+		source: 'AccordionRoot',
+		target: 'AccordionHeader',
+	};
+
+	const itemContextSettings: ValidateContextProps<AccordionItemContextProps> = {
+		key: 'accordion-item-context',
+		source: 'AccordionItem',
+		target: 'AccordionHeader',
+	};
+</script>
+
+<script lang="ts">
+	validateContext(rootContextSettings);
+	validateContext(itemContextSettings);
 
 	let {
-		ref = $bindable<HTMLHeadingElement | null>(null),
+		ref = $bindable<HTMLDivElementReference>(null),
 		child,
 		children,
-		class: className,
+		'class': className,
+		'aria-level': ariaLevel = 3,
 		...restProps
 	}: AccordionHeaderProps = $props();
 
-	const childProps: AccordionHeaderChildProps = {
-		ref,
-	};
+	setContext<EmptyContext>('accordion-header-context', {});
 
-	setContext('accordion-header-context', {});
+	const childProps: AccordionHeaderChildProps = {
+		props: { ref, 'role': 'heading', 'aria-level': ariaLevel, ...restProps },
+	};
 </script>
 
 {#if child}
-	{@render child({
-		props: childProps,
-	})}
+	{@render child(childProps)}
 {:else}
-	<h3
+	<div
 		bind:this={ref}
+		role="heading"
+		aria-level={ariaLevel}
 		class={cn('flex', className)}
 		{...restProps}
 	>
 		{@render children?.()}
-	</h3>
+	</div>
 {/if}

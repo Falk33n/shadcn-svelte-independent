@@ -1,63 +1,82 @@
-<script lang="ts">
+<script
+	lang="ts"
+	module
+>
 	import type {
-		AccordionIndicatorChildProps,
-		AccordionIndicatorProps,
 		AccordionItemContextProps,
 		AccordionRootContextProps,
 	} from '$components/ui/accordion';
 	import { ChevronUp } from '$components/ui/icons';
-	import { cn } from '$utils';
-	import { getContext } from 'svelte';
+	import type {
+		EmptyContext,
+		SVGElementReference,
+		ValidateContextProps,
+	} from '$types';
+	import { cn, validateContext } from '$utils';
+	import type { Snippet } from 'svelte';
+	import type { SVGAttributes } from 'svelte/elements';
 
-	const rootContext: AccordionRootContextProps | undefined = getContext(
-		'accordion-root-context',
-	);
+	export type AccordionIndicatorAttributes = Omit<
+		SVGAttributes<SVGElement>,
+		'aria-hidden'
+	>;
 
-	if (!rootContext) {
-		throw new Error('AccordionIndicator must be used within an Accordion');
-	}
+	export type AccordionIndicatorChildProps = {
+		props: AccordionIndicatorAttributes & {
+			'ref': SVGElementReference;
+			'aria-hidden': boolean;
+		};
+	};
 
-	const itemContext: AccordionItemContextProps | undefined = getContext(
-		'accordion-item-context',
-	);
+	export type AccordionIndicatorProps = AccordionIndicatorAttributes & {
+		ref?: SVGElementReference;
+		child?: Snippet<[AccordionIndicatorProps]>;
+	};
 
-	if (!itemContext) {
-		throw new Error('AccordionIndicator must be used within an AccordionItem');
-	}
+	const rootContextSettings: ValidateContextProps<AccordionRootContextProps> = {
+		key: 'accordion-root-context',
+		source: 'AccordionRoot',
+		target: 'AccordionIndicator',
+	};
 
-	const triggerBaseContext: {} | undefined = getContext(
-		'accordion-trigger-base-context',
-	);
+	const itemContextSettings: ValidateContextProps<AccordionItemContextProps> = {
+		key: 'accordion-item-context',
+		source: 'AccordionItem',
+		target: 'AccordionIndicator',
+	};
 
-	if (!triggerBaseContext) {
-		throw new Error(
-			'AccordionIndicator must be used within an AccordionTriggerBase',
-		);
-	}
+	const triggerBaseContextSettings: ValidateContextProps<EmptyContext> = {
+		key: 'accordion-trigger-base-context',
+		source: 'AccordionTriggerBase',
+		target: 'AccordionIndicator',
+	};
+</script>
+
+<script lang="ts">
+	validateContext(rootContextSettings);
+	const { isItemOpen } = validateContext(itemContextSettings);
+	validateContext(triggerBaseContextSettings);
 
 	let {
-		ref = $bindable<SVGElement | null>(null),
+		ref = $bindable<SVGElementReference>(null),
 		child,
 		class: className,
 		...restProps
 	}: AccordionIndicatorProps = $props();
 
 	const childProps: AccordionIndicatorChildProps = {
-		ref,
-		'aria-hidden': true,
+		props: { ref, 'aria-hidden': true, ...restProps },
 	};
 </script>
 
 {#if child}
-	{@render child({ props: childProps })}
+	{@render child(childProps)}
 {:else}
 	<ChevronUp
 		bind:ref
 		class={cn(
-			'size-5 transition-all duration-300 ease-out',
-			itemContext.getItemState() === 'open'
-				? '[&>path]:fill-secondary-foreground'
-				: 'rotate-180 [&>path]:fill-foreground',
+			'size-5 transition-all duration-300 ease-out [&>path]:fill-foreground',
+			isItemOpen.value && 'rotate-180 ',
 			className,
 		)}
 		aria-hidden={true}

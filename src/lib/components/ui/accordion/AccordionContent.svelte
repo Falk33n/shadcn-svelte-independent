@@ -1,90 +1,167 @@
-<script lang="ts">
+<script
+	lang="ts"
+	module
+>
 	import {
-		onAccordionHeightChange,
-		type AccordionContentChildProps,
-		type AccordionContentProps,
 		type AccordionItemContextProps,
 		type AccordionRootContextProps,
 	} from '$components/ui/accordion';
-	import { cn } from '$utils';
-	import { getContext } from 'svelte';
+	import type { HTMLDivElementReference, ValidateContextProps } from '$types';
+	import { cn, validateContext } from '$utils';
+	import { onMount, type Snippet } from 'svelte';
+	import type { HTMLAttributes } from 'svelte/elements';
 
-	const rootContext: AccordionRootContextProps | undefined = getContext(
-		'accordion-root-context',
-	);
+	export type AccordionContentAttributes = Omit<
+		HTMLAttributes<HTMLDivElement>,
+		'role' | 'hidden' | 'aria-labelledby' | 'id' | 'style'
+	>;
 
-	if (!rootContext) {
-		throw new Error('AccordionContent must be used within an Accordion');
+	export type AccordionContentChildProps = {
+		props: AccordionContentAttributes & {
+			'ref': HTMLDivElementReference;
+			'style': string;
+			'role'?: 'region';
+			'id': string;
+			'hidden': boolean;
+			'aria-labelledby': string;
+			'data-accordion': 'content';
+		};
+	};
+
+	export type AccordionContentProps = AccordionContentAttributes & {
+		ref?: HTMLDivElementReference;
+		child?: Snippet<[AccordionContentChildProps]>;
+	};
+
+	type IsItemOpenState = { value: boolean };
+	type HiddenState = { value: boolean };
+	type RoleState = { value?: 'region' };
+
+	const style =
+		'--accordion-content-height: 0px; height: var(--accordion-content-height);';
+
+	const rootContextSettings: ValidateContextProps<AccordionRootContextProps> = {
+		key: 'accordion-root-context',
+		source: 'AccordionRoot',
+		target: 'AccordionContent',
+	};
+
+	const itemContextSettings: ValidateContextProps<AccordionItemContextProps> = {
+		key: 'accordion-item-context',
+		source: 'AccordionItem',
+		target: 'AccordionContent',
+	};
+
+	function setHeight(ref: HTMLDivElement | null, hidden: HiddenState) {
+		if (!ref) return;
+		const contentHeight = !hidden.value ? `${ref.scrollHeight}px` : '0px';
+		ref.style.setProperty('--accordion-content-height', contentHeight);
 	}
 
-	const itemContext: AccordionItemContextProps | undefined = getContext(
-		'accordion-item-context',
-	);
+	let timeoutId: NodeJS.Timeout;
 
-	if (!itemContext) {
-		throw new Error('AccordionContent must be used within an AccordionItem');
+	function delaySetHidden(isItemOpen: IsItemOpenState, hidden: HiddenState) {
+		if (!isItemOpen.value) {
+			clearTimeout(timeoutId);
+			timeoutId = setTimeout(() => {
+				hidden.value = true;
+			}, 300);
+		} else {
+			hidden.value = false;
+		}
 	}
+
+	function getContentSiblings(ref: HTMLDivElement, role: RoleState) {
+		const rootAccordion = ref.closest<HTMLDivElement>(
+			'[data-accordion="root"]',
+		);
+
+		if (!rootAccordion) {
+			role.value = 'region';
+			return [];
+		}
+
+		return Array.from(
+			rootAccordion.querySelectorAll<HTMLDivElement>(
+				'[data-accordion="content"]',
+			),
+		);
+	}
+
+	function setRole(
+		ref: HTMLDivElement | null,
+		role: RoleState,
+		rootType: 'single' | 'multiple',
+	) {
+		if (!ref || rootType === 'single') {
+			role.value = 'region';
+			return;
+		}
+
+		const contents = getContentSiblings(ref, role);
+
+		role.value = contents.length <= 6 ? 'region' : undefined;
+	}
+</script>
+
+<script lang="ts">
+	const { rootType, rootID } = validateContext(rootContextSettings);
+	const { itemValue, isItemOpen } = validateContext(itemContextSettings);
+
+	let hidden = $state({ value: true });
+	let role = $state<RoleState>({ value: undefined });
 
 	let {
-		ref = $bindable<HTMLDivElement | null>(null),
+		ref = $bindable<HTMLDivElementReference>(null),
 		child,
 		children,
 		class: className,
 		...restProps
 	}: AccordionContentProps = $props();
 
-	let isHidden = $state(itemContext.getItemState() === 'closed');
-
-	function getIsHidden() {
-		return isHidden;
-	}
-
-	const childProps: AccordionContentChildProps = {
-		ref,
-		'style':
-			'--accordion-content-height: 0px; height: var(--accordion-content-height);',
-		'id': `accordion-content-${itemContext.value}-${rootContext.uniqueID}`,
-		'role': 'region' as const,
-		'aria-labelledby': `accordion-trigger-${itemContext.value}-${rootContext.uniqueID}`,
-		'hidden': getIsHidden(),
-	};
-
-	let timeoutId: NodeJS.Timeout | null = null;
+	onMount(() => {
+		setRole(ref, role, rootType);
+		setHeight(ref, hidden);
+		delaySetHidden(isItemOpen, hidden);
+	});
 
 	$effect(() => {
-		if (!ref) return;
-		onAccordionHeightChange(ref, isHidden);
-
-		if (itemContext.getItemState() === 'closed') {
-			if (timeoutId) clearTimeout(timeoutId);
-			timeoutId = setTimeout(() => {
-				isHidden = true;
-			}, 300);
-		} else {
-			isHidden = false;
-			if (timeoutId) clearTimeout(timeoutId);
-		}
+		setHeight(ref, hidden);
+		delaySetHidden(isItemOpen, hidden);
 	});
+
+	const ariaLabelledby = `accordion-trigger-${itemValue}-${rootID}`;
+	const id = `accordion-content-${itemValue}-${rootID}`;
+
+	const childProps: AccordionContentChildProps = {
+		props: {
+			ref,
+			id,
+			style,
+			'role': role.value,
+			'aria-labelledby': ariaLabelledby,
+			'data-accordion': 'content',
+			'hidden': hidden.value,
+			...restProps,
+		},
+	};
 </script>
 
 {#if child}
-	{@render child({
-		props: childProps,
-	})}
+	{@render child(childProps)}
 {:else}
 	<div
 		bind:this={ref}
+		{style}
+		{id}
 		class={cn(
-			'overflow-hidden bg-background text-sm text-foreground transition-[height] duration-300 ease-out',
-			itemContext.getItemState() === 'open'
-				? 'animate-accordion-down'
-				: 'animate-accordion-up',
+			'overflow-hidden border-b text-sm transition-[height] duration-300 ease-out',
+			isItemOpen.value ? 'animate-accordion-down' : 'animate-accordion-up',
 		)}
-		style="--accordion-content-height: 0px; height: var(--accordion-content-height);"
-		role="region"
-		id={`accordion-content-${itemContext.value}-${rootContext.uniqueID}`}
-		aria-labelledby={`accordion-trigger-${itemContext.value}-${rootContext.uniqueID}`}
-		hidden={isHidden}
+		aria-labelledby={ariaLabelledby}
+		hidden={hidden.value}
+		role={role.value}
+		data-accordion="content"
 		{...restProps}
 	>
 		<div class={cn('px-5 py-[15px]', className)}>
