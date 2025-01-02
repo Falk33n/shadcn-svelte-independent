@@ -2,8 +2,15 @@
 	lang="ts"
 	module
 >
-	import type { ToastProviderBaseContextProps } from '$components/ui/toast';
-	import type { HTMLDivElementReference, ValidateContextProps } from '$types';
+	import {
+		activeToast,
+		type ToastProviderBaseContextProps,
+	} from '$components/ui/toast';
+	import type {
+		EmptyContext,
+		HTMLDivElementReference,
+		ValidateContextProps,
+	} from '$types';
 	import { cn, validateContext } from '$utils';
 	import { type Snippet } from 'svelte';
 	import type { HTMLAttributes } from 'svelte/elements';
@@ -30,10 +37,24 @@
 			source: 'ToastProviderBase',
 			target: 'ToastTitle',
 		};
+
+	const viewportContextSettings: ValidateContextProps<EmptyContext> = {
+		key: 'toast-viewport-context',
+		source: 'ToastViewport',
+		target: 'ToastTitle',
+	};
+
+	const rootContextSettings: ValidateContextProps<EmptyContext> = {
+		key: 'toast-root-context',
+		source: 'ToastRoot',
+		target: 'ToastTitle',
+	};
 </script>
 
 <script lang="ts">
-	const { activeToast } = validateContext(providerContextSettings);
+	validateContext(providerContextSettings);
+	validateContext(viewportContextSettings);
+	validateContext(rootContextSettings);
 
 	let {
 		ref = $bindable<HTMLDivElementReference>(null),
