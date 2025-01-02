@@ -1,6 +1,9 @@
 <script lang="ts">
 	import '../app.css';
+	import { ToastProvider } from '../lib/components/ui/toast';
 	let { children } = $props();
 </script>
 
-{@render children()}
+<ToastProvider label="Notification">
+	{@render children()}
+</ToastProvider>
