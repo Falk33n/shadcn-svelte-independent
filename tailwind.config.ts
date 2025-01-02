@@ -78,10 +78,27 @@ const config: Config = {
 					from: { height: 'var(--accordion-content-height)' },
 					to: { height: '0px' },
 				},
+				'toast-slide-in': {
+					from: {
+						transform: 'translateX(calc(100% + var(--viewport-padding)))',
+					},
+					to: { transform: 'translateX(0)' },
+				},
+				'toast-slide-out': {
+					from: { transform: 'translateX(var(--toast-swipe-move))' },
+					to: { transform: 'translateX(calc(100% + var(--viewport-padding)))' },
+				},
+				'fade-out': {
+					from: { opacity: '1' },
+					to: { opacity: '0' },
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.3s ease-out forwards',
 				'accordion-up': 'accordion-up 0.3s ease-out forwards',
+				'toast-slide-in': 'toast-slide-in 3s ease-in',
+				'toast-slide-out': 'toast-slide-out 0.3 ease-out forwards',
+				'fade-out': 'fade-out 0.3s ease-in forwards',
 			},
 		},
 	},

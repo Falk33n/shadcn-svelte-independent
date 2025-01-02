@@ -22,9 +22,7 @@ import AccordionRoot, {
 	type AccordionRootChildProps,
 	type AccordionRootProps,
 } from './AccordionRoot.svelte';
-import AccordionTrigger, {
-	type AccordionTriggerProps,
-} from './AccordionTrigger.svelte';
+import AccordionTrigger from './AccordionTrigger.svelte';
 import AccordionTriggerBase, {
 	type AccordionTriggerBaseAttributes,
 	type AccordionTriggerBaseChildProps,
@@ -60,7 +58,6 @@ export {
 	type AccordionTriggerBaseAttributes,
 	type AccordionTriggerBaseChildProps,
 	type AccordionTriggerBaseProps,
-	type AccordionTriggerProps,
 };
 
 export type {

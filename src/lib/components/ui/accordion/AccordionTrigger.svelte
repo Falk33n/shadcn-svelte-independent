@@ -38,7 +38,6 @@
 		child,
 		children,
 		class: className,
-		disabled,
 		...restProps
 	}: AccordionTriggerBaseProps = $props();
 </script>
@@ -46,7 +45,6 @@
 <AccordionHeader>
 	<AccordionTriggerBase
 		bind:ref
-		{disabled}
 		class={className ? cn(className) : undefined}
 		{...restProps}
 	>
