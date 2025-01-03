@@ -27,9 +27,22 @@ import AccordionTriggerBase, {
 	type AccordionTriggerBaseAttributes,
 	type AccordionTriggerBaseChildProps,
 	type AccordionTriggerBaseProps,
-	onAccordionItemOpenChange,
-	onAccordionKeyboardNavigate,
 } from './AccordionTriggerBase.svelte';
+
+export {
+	getAccordionItemContext,
+	getAccordionRootContext,
+	setAccordionHeaderContext,
+	setAccordionItemContext,
+	setAccordionRootContext,
+	setAccordionTriggerContext,
+	validateAccordionHeaderContext,
+	validateAccordionItemContext,
+	validateAccordionRootContext,
+	validateAccordionTriggerContext,
+	type AccordionItemContextProps,
+	type AccordionRootContextProps,
+} from './context';
 
 export {
 	AccordionRoot as Accordion,
@@ -39,8 +52,6 @@ export {
 	AccordionItem,
 	AccordionTrigger,
 	AccordionTriggerBase,
-	onAccordionItemOpenChange,
-	onAccordionKeyboardNavigate,
 	type AccordionContentAttributes,
 	type AccordionContentChildProps,
 	type AccordionContentProps,
@@ -59,8 +70,3 @@ export {
 	type AccordionTriggerBaseChildProps,
 	type AccordionTriggerBaseProps,
 };
-
-export type {
-	AccordionItemContextProps,
-	AccordionRootContextProps,
-} from './types';

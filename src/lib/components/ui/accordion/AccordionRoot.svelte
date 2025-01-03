@@ -2,10 +2,10 @@
 	lang="ts"
 	module
 >
-	import type { AccordionRootContextProps } from '$components/ui/accordion';
+	import { setAccordionRootContext } from '$components/ui/accordion';
 	import type { HTMLDivElementReference } from '$types';
 	import { cn, generateID } from '$utils';
-	import { setContext, type Snippet } from 'svelte';
+	import { type Snippet } from 'svelte';
 	import type { HTMLAttributes } from 'svelte/elements';
 
 	export type AccordionRootAttributes = Omit<
@@ -27,7 +27,7 @@
 		child?: Snippet<[AccordionRootChildProps]>;
 		value?: string | string[];
 		defaultValue?: string | string[];
-		onValueChange?: (value: string | string[]) => void;
+		onValueChange?: (value?: string | string[]) => void;
 		isCollapsible?: boolean;
 		dir?: 'ltr' | 'rtl';
 	};
@@ -76,14 +76,18 @@
 
 	validateValues(type, defaultValue, value);
 
-	let rootValue = $state<{ value: string | string[] | undefined }>({ value });
+	let rootValue = $state<string | string[] | undefined>();
+	const getRootValue = () => rootValue;
+	const setRootValue = (newValue: string | string[] | undefined) =>
+		(rootValue = newValue);
 
-	setContext<AccordionRootContextProps>('accordion-root-context', {
+	setAccordionRootContext({
 		rootType: type,
-		rootValue,
 		isCollapsible,
 		rootID: generateID(),
-		rootOnValueChange: onValueChange,
+		getRootValue,
+		setRootValue,
+		onRootValueChange: onValueChange,
 	});
 
 	const childProps: AccordionRootChildProps = {

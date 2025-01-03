@@ -6,32 +6,19 @@
 		AccordionHeader,
 		AccordionIndicator,
 		AccordionTriggerBase,
-		type AccordionItemContextProps,
-		type AccordionRootContextProps,
+		validateAccordionItemContext,
+		validateAccordionRootContext,
 		type AccordionTriggerBaseProps,
 	} from '$components/ui/accordion';
-	import type {
-		HTMLButtonElementReference,
-		ValidateContextProps,
-	} from '$types';
-	import { cn, validateContext } from '$utils';
+	import type { HTMLButtonElementReference } from '$types';
+	import { cn } from '$utils';
 
-	const rootContextSettings: ValidateContextProps<AccordionRootContextProps> = {
-		key: 'accordion-root-context',
-		source: 'AccordionRoot',
-		target: 'AccordionTrigger',
-	};
-
-	const itemContextSettings: ValidateContextProps<AccordionItemContextProps> = {
-		key: 'accordion-item-context',
-		source: 'AccordionItem',
-		target: 'AccordionTrigger',
-	};
+	const source = 'AccordionTrigger';
 </script>
 
 <script lang="ts">
-	validateContext(rootContextSettings);
-	validateContext(itemContextSettings);
+	validateAccordionRootContext(source);
+	validateAccordionItemContext(source);
 
 	let {
 		ref = $bindable<HTMLButtonElementReference>(null),

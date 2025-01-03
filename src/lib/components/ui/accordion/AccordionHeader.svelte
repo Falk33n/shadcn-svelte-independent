@@ -2,18 +2,15 @@
 	lang="ts"
 	module
 >
-	import type {
-		EmptyContext,
-		HTMLDivElementReference,
-		ValidateContextProps,
-	} from '$types';
-	import { cn, validateContext } from '$utils';
-	import { setContext, type Snippet } from 'svelte';
+	import {
+		setAccordionHeaderContext,
+		validateAccordionItemContext,
+		validateAccordionRootContext,
+	} from '$components/ui/accordion';
+	import type { HTMLDivElementReference } from '$types';
+	import { cn } from '$utils';
+	import { type Snippet } from 'svelte';
 	import type { HTMLAttributes } from 'svelte/elements';
-	import type {
-		AccordionItemContextProps,
-		AccordionRootContextProps,
-	} from './types';
 
 	export type AccordionHeaderAttributes = Omit<
 		HTMLAttributes<HTMLDivElement>,
@@ -32,22 +29,13 @@
 		child?: Snippet<[AccordionHeaderChildProps]>;
 	};
 
-	const rootContextSettings: ValidateContextProps<AccordionRootContextProps> = {
-		key: 'accordion-root-context',
-		source: 'AccordionRoot',
-		target: 'AccordionHeader',
-	};
-
-	const itemContextSettings: ValidateContextProps<AccordionItemContextProps> = {
-		key: 'accordion-item-context',
-		source: 'AccordionItem',
-		target: 'AccordionHeader',
-	};
+	const source = 'AccordionHeader';
 </script>
 
 <script lang="ts">
-	validateContext(rootContextSettings);
-	validateContext(itemContextSettings);
+	validateAccordionRootContext(source);
+	validateAccordionItemContext(source);
+	setAccordionHeaderContext();
 
 	let {
 		ref = $bindable<HTMLDivElementReference>(null),
@@ -57,8 +45,6 @@
 		'aria-level': ariaLevel = 3,
 		...restProps
 	}: AccordionHeaderProps = $props();
-
-	setContext<EmptyContext>('accordion-header-context', {});
 
 	const childProps: AccordionHeaderChildProps = {
 		props: { ref, 'role': 'heading', 'aria-level': ariaLevel, ...restProps },

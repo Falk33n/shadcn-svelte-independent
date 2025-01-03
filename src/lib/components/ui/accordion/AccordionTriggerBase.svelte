@@ -3,21 +3,15 @@
 	module
 >
 	import {
-		type AccordionItemContextProps,
-		type AccordionRootContextProps,
+		getAccordionItemContext,
+		getAccordionRootContext,
+		setAccordionTriggerContext,
+		validateAccordionHeaderContext,
 	} from '$components/ui/accordion';
-	import type {
-		EmptyContext,
-		HTMLButtonElementReference,
-		ValidateContextProps,
-	} from '$types';
-	import { cn, validateContext } from '$utils';
-	import { setContext, type Snippet } from 'svelte';
-	import type {
-		HTMLButtonAttributes,
-		KeyboardEventHandler,
-		MouseEventHandler,
-	} from 'svelte/elements';
+	import type { HTMLButtonElementReference } from '$types';
+	import { cn } from '$utils';
+	import { onMount, type Snippet } from 'svelte';
+	import type { HTMLButtonAttributes } from 'svelte/elements';
 
 	export type AccordionTriggerBaseAttributes = Omit<
 		HTMLButtonAttributes,
@@ -27,15 +21,11 @@
 		| 'aria-expanded'
 		| 'aria-disabled'
 		| 'tabindex'
-		| 'onclick'
-		| 'onkeydown'
 	>;
 
 	export type AccordionTriggerBaseChildProps = {
 		props: AccordionTriggerBaseAttributes & {
 			'ref': HTMLButtonElementReference;
-			'onkeydown': KeyboardEventHandler<HTMLButtonElement> | null;
-			'onclick': MouseEventHandler<HTMLButtonElement> | null;
 			'aria-controls': string;
 			'aria-expanded': boolean;
 			'aria-disabled': boolean;
@@ -51,83 +41,83 @@
 		child?: Snippet<[AccordionTriggerBaseChildProps]>;
 	};
 
-	type RootValueState = { value?: string | string[] };
-
 	type onAccordionItemOpenChangeProps = {
 		rootType: 'single' | 'multiple';
 		isCollapsible: boolean;
-		rootValue: RootValueState;
 		itemValue: string;
-		rootOnValueChange?: (newValue: string | string[]) => void;
+		rootValue: string | string[] | undefined;
+		setRootValue: (newValue: string | string[] | undefined) => void;
+		onRootValueChange?: (newValue: string | string[]) => void;
 	};
 
 	type AccordionKeyboardEvent = KeyboardEvent & {
 		currentTarget: EventTarget & HTMLButtonElement;
 	};
 
-	const rootContextSettings: ValidateContextProps<AccordionRootContextProps> = {
-		key: 'accordion-root-context',
-		source: 'AccordionRoot',
-		target: 'AccordionTriggerBase',
-	};
-
-	const itemContextSettings: ValidateContextProps<AccordionItemContextProps> = {
-		key: 'accordion-item-context',
-		source: 'AccordionItem',
-		target: 'AccordionTriggerBase',
-	};
-
-	const headerContextSettings: ValidateContextProps<EmptyContext> = {
-		key: 'accordion-header-context',
-		source: 'AccordionHeader',
-		target: 'AccordionTriggerBase',
-	};
+	const source = 'AccordionTriggerBase';
 
 	function handleSingleItemOpenChange(
-		rootValue: RootValueState,
+		rootValue: string | string[] | undefined,
+		setRootValue: (newValue: string | string[] | undefined) => void,
 		itemValue: string,
 		isCollapsible: boolean,
 	) {
-		rootValue.value = isCollapsible
-			? rootValue.value === itemValue
-				? undefined
-				: itemValue
-			: rootValue.value !== itemValue
-				? itemValue
-				: rootValue.value;
+		setRootValue(
+			isCollapsible
+				? rootValue === itemValue
+					? undefined
+					: itemValue
+				: rootValue !== itemValue
+					? itemValue
+					: rootValue,
+		);
 	}
 
 	function handleMultipleItemsOpenChange(
-		rootValue: RootValueState,
+		rootValue: string | string[] | undefined,
+		setRootValue: (newValue: string | string[] | undefined) => void,
 		itemValue: string,
 		isCollapsible: boolean,
 	) {
-		if (Array.isArray(rootValue.value)) {
-			rootValue.value = isCollapsible
-				? rootValue.value.includes(itemValue)
-					? rootValue.value.filter((val) => val !== itemValue)
-					: [...rootValue.value, itemValue]
-				: !rootValue.value.includes(itemValue)
-					? [...rootValue.value, itemValue]
-					: rootValue.value;
+		if (Array.isArray(rootValue)) {
+			setRootValue(
+				isCollapsible
+					? rootValue.includes(itemValue)
+						? rootValue.filter((val) => val !== itemValue)
+						: [...rootValue, itemValue]
+					: !rootValue.includes(itemValue)
+						? [...rootValue, itemValue]
+						: rootValue,
+			);
 		}
 	}
 
-	export function onAccordionItemOpenChange({
+	function onAccordionItemOpenChange({
 		rootType,
 		isCollapsible,
 		rootValue,
+		setRootValue,
 		itemValue,
-		rootOnValueChange,
+		onRootValueChange,
 	}: onAccordionItemOpenChangeProps) {
 		if (rootType === 'single') {
-			handleSingleItemOpenChange(rootValue, itemValue, isCollapsible);
+			handleSingleItemOpenChange(
+				rootValue,
+				setRootValue,
+				itemValue,
+				isCollapsible,
+			);
 		} else {
-			handleMultipleItemsOpenChange(rootValue, itemValue, isCollapsible);
+			handleMultipleItemsOpenChange(
+				rootValue,
+				setRootValue,
+				itemValue,
+				isCollapsible,
+			);
 		}
 
-		if (rootValue.value) {
-			rootOnValueChange?.(rootValue.value);
+		if (rootValue) {
+			onRootValueChange?.(rootValue);
 		}
 	}
 
@@ -161,7 +151,7 @@
 		}
 	}
 
-	export function onAccordionKeyboardNavigate(
+	function onAccordionKeyboardNavigate(
 		e: AccordionKeyboardEvent,
 		ref: HTMLButtonElementReference,
 	) {
@@ -185,12 +175,17 @@
 </script>
 
 <script lang="ts">
-	const { isCollapsible, rootID, rootType, rootValue, rootOnValueChange } =
-		validateContext(rootContextSettings);
-	const { isItemOpen, itemValue } = validateContext(itemContextSettings);
-	validateContext(headerContextSettings);
-
-	let ariaDisabled = $state({ value: false });
+	const {
+		isCollapsible,
+		rootID,
+		rootType,
+		getRootValue,
+		setRootValue,
+		onRootValueChange,
+	} = getAccordionRootContext(source);
+	const { getIsItemOpen, itemValue } = getAccordionItemContext(source);
+	validateAccordionHeaderContext(source);
+	setAccordionTriggerContext();
 
 	let {
 		ref = $bindable<HTMLButtonElementReference>(null),
@@ -201,31 +196,40 @@
 		...restProps
 	}: AccordionTriggerBaseProps = $props();
 
-	setContext<EmptyContext>('accordion-trigger-base-context', {});
+	const rootValue = $derived(getRootValue());
+	const isItemOpen = $derived(getIsItemOpen());
 
-	$effect(() => {
-		ariaDisabled.value = isItemOpen.value && !isCollapsible;
+	const ariaDisabled = $derived(isItemOpen && !isCollapsible);
+	const getAriaDisabled = () => ariaDisabled;
+
+	onMount(() => {
+		if (!ref) return;
+
+		ref.addEventListener('keydown', (e) =>
+			onAccordionKeyboardNavigate(e as AccordionKeyboardEvent, ref),
+		);
+
+		ref.addEventListener('click', () =>
+			onAccordionItemOpenChange({
+				isCollapsible,
+				itemValue,
+				rootType,
+				rootValue,
+				setRootValue,
+				onRootValueChange,
+			}),
+		);
 	});
 
 	const id = `accordion-trigger-${itemValue}-${rootID}`;
 	const ariaControls = `accordion-content-${itemValue}-${rootID}`;
-
 	const childProps: AccordionTriggerBaseChildProps = {
 		props: {
 			ref,
 			id,
-			'onclick': () =>
-				onAccordionItemOpenChange({
-					isCollapsible,
-					itemValue,
-					rootType,
-					rootValue,
-					rootOnValueChange,
-				}),
-			'onkeydown': (e) => onAccordionKeyboardNavigate(e, ref),
 			'aria-controls': ariaControls,
-			'aria-expanded': isItemOpen.value,
-			'aria-disabled': ariaDisabled.value,
+			'aria-expanded': getIsItemOpen(),
+			'aria-disabled': getAriaDisabled(),
 			'disabled': disabled === true,
 			'tabindex': 0,
 			'data-accordion': 'trigger',
@@ -241,15 +245,6 @@
 		bind:this={ref}
 		{disabled}
 		{id}
-		onclick={() =>
-			onAccordionItemOpenChange({
-				isCollapsible,
-				itemValue,
-				rootType,
-				rootValue,
-				rootOnValueChange,
-			})}
-		onkeydown={(e) => onAccordionKeyboardNavigate(e, ref)}
 		class={cn(
 			'flex h-[45px] flex-1 items-center justify-between border-b px-5 font-medium leading-none outline-none transition-colors hover:underline focus-visible:ring-1 focus-visible:ring-ring',
 			disabled && 'cursor-not-allowed opacity-50',
@@ -257,8 +252,8 @@
 		)}
 		type="button"
 		tabindex={0}
-		aria-expanded={isItemOpen.value}
-		aria-disabled={ariaDisabled.value}
+		aria-expanded={isItemOpen}
+		aria-disabled={ariaDisabled}
 		aria-controls={ariaControls}
 		data-accordion="trigger"
 		{...restProps}
