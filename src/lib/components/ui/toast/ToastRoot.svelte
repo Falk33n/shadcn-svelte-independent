@@ -2,10 +2,19 @@
 	lang="ts"
 	module
 >
-	import type { ToastProviderBaseContextProps } from '$components/ui/toast';
-	import type { HTMLLIElementReference, ValidateContextProps } from '$types';
+	import {
+		activeToast,
+		toastQueue,
+		type ToastProps,
+		type ToastProviderBaseContextProps,
+	} from '$components/ui/toast';
+	import type {
+		EmptyContext,
+		HTMLLIElementReference,
+		ValidateContextProps,
+	} from '$types';
 	import { cn, validateContext } from '$utils';
-	import { onMount, type Snippet } from 'svelte';
+	import { setContext, type Snippet } from 'svelte';
 	import type { HTMLLiAttributes } from 'svelte/elements';
 
 	export type ToastRootAttributes = Omit<
@@ -29,7 +38,6 @@
 	};
 
 	type IsToastVisibleState = { value: boolean };
-	type IsHiddenState = { value: boolean };
 	type IsSwipeCanceledState = { value: boolean };
 	type HasSwipedOutState = { value: boolean };
 	type IsSwipeMovingState = { value: boolean };
@@ -39,7 +47,6 @@
 	type OnSwipeMoveProps = {
 		ref: HTMLLIElementReference;
 		isToastVisible: IsToastVisibleState;
-		isHidden: IsHiddenState;
 		isSwipeMoving: IsSwipeMovingState;
 		isSwipeCanceled: IsSwipeCanceledState;
 		hasSwipedOut: HasSwipedOutState;
@@ -54,7 +61,6 @@
 		isSwipeCanceled: IsSwipeCanceledState;
 		hasSwipedOut: HasSwipedOutState;
 		isToastVisible: IsToastVisibleState;
-		isHidden: IsHiddenState;
 		startX: StartXState;
 		currentX: CurrentXState;
 		swipeThreshold: number;
@@ -74,28 +80,18 @@
 	const style =
 		'--toast-swipe-move: 0px; transform: translateX(var(--toast-swipe-move));';
 
-	const providerContextSettings: ValidateContextProps<ToastProviderBaseContextProps> =
+	const providerBaseContextSettings: ValidateContextProps<ToastProviderBaseContextProps> =
 		{
 			key: 'toast-provider-base-context',
 			source: 'ToastProviderBase',
 			target: 'ToastRoot',
 		};
 
-	let delaySetIsHiddenTimeoutId: NodeJS.Timeout;
-
-	function delaySetIsHidden(
-		isToastVisible: IsToastVisibleState,
-		isHidden: IsHiddenState,
-	) {
-		if (!isToastVisible.value) {
-			clearTimeout(delaySetIsHiddenTimeoutId);
-			delaySetIsHiddenTimeoutId = setTimeout(() => {
-				isHidden.value = true;
-			}, 200);
-		} else {
-			isHidden.value = false;
-		}
-	}
+	const viewportContextSettings: ValidateContextProps<EmptyContext> = {
+		key: 'toast-viewport-context',
+		source: 'ToastViewport',
+		target: 'ToastRoot',
+	};
 
 	function onPointerMove({ e, ref, currentX, startX }: OnPointerMoveProps) {
 		e.preventDefault();
@@ -116,24 +112,25 @@
 		isSwipeCanceled,
 		hasSwipedOut,
 		isToastVisible,
-		isHidden,
 	}: OnPointerUpProps) {
 		clearTimeout(onPointerUpTimeoutId);
 
-		const deltaX = currentX.value - startX.value;
-
-		if (deltaX > swipeThreshold) {
+		if (currentX.value - startX.value > swipeThreshold) {
 			isSwipeMoving.value = false;
-			hasSwipedOut.value = true;
 			isToastVisible.value = false;
+			hasSwipedOut.value = true;
+
+			onPointerUpTimeoutId = setTimeout(() => {
+				toastQueue.value.shift();
+				hasSwipedOut.value = false;
+			}, 300);
 		} else {
 			isSwipeCanceled.value = true;
-
 			ref.style.setProperty('--toast-swipe-move', '0px');
 
 			onPointerUpTimeoutId = setTimeout(() => {
 				isSwipeCanceled.value = false;
-			}, 200);
+			}, 300);
 		}
 
 		ref.removeEventListener('pointermove', (e) => {
@@ -146,7 +143,6 @@
 				swipeThreshold,
 				startX,
 				currentX,
-				isHidden,
 				isSwipeMoving,
 				isSwipeCanceled,
 				hasSwipedOut,
@@ -161,7 +157,6 @@
 		currentX,
 		startX,
 		isSwipeMoving,
-		isHidden,
 		swipeThreshold,
 		isToastVisible,
 		hasSwipedOut,
@@ -181,7 +176,6 @@
 				swipeThreshold,
 				startX,
 				currentX,
-				isHidden,
 				isSwipeMoving,
 				isSwipeCanceled,
 				hasSwipedOut,
@@ -190,9 +184,43 @@
 		);
 	}
 
+	let toastRemovalId: NodeJS.Timeout;
+
+	function onToastRemoval(
+		activeToast: { value?: ToastProps },
+		isToastVisible: IsToastVisibleState,
+		toastDuration: number = 5000,
+	) {
+		if (activeToast.value) {
+			clearTimeout(toastRemovalId);
+			toastRemovalId = setTimeout(() => {
+				isToastVisible.value = false;
+				setTimeout(() => {
+					toastQueue.value.shift();
+				}, 300);
+			}, toastDuration);
+		}
+	}
+
+	let onMultipleTimeoutId: NodeJS.Timeout;
+
+	function onMultipleToast(
+		isToastVisible: IsToastVisibleState,
+		hasSwipedOut: HasSwipedOutState,
+	) {
+		clearTimeout(onMultipleTimeoutId);
+
+		isToastVisible.value = false;
+		hasSwipedOut.value = true;
+
+		onMultipleTimeoutId = setTimeout(() => {
+			toastQueue.value.shift();
+			hasSwipedOut.value = false;
+		}, 50);
+	}
+
 	function onSwipeMove({
 		hasSwipedOut,
-		isHidden,
 		isSwipeCanceled,
 		currentX,
 		startX,
@@ -210,7 +238,6 @@
 				currentX,
 				startX,
 				isSwipeMoving,
-				isHidden,
 				swipeThreshold,
 				isToastVisible,
 				hasSwipedOut,
@@ -221,14 +248,14 @@
 </script>
 
 <script lang="ts">
-	const { isToastVisible, swipeThreshold, activeToast } = validateContext(
-		providerContextSettings,
+	const { isToastVisible, swipeThreshold } = validateContext(
+		providerBaseContextSettings,
 	);
+	validateContext(viewportContextSettings);
 
 	let isSwipeMoving = $state({ value: false });
 	let isSwipeCanceled = $state({ value: false });
 	let hasSwipedOut = $state({ value: false });
-	let isHidden = $state({ value: true });
 	let startX = $state({ value: 0 });
 	let currentX = $state({ value: 0 });
 
@@ -240,6 +267,31 @@
 		...restProps
 	}: ToastRootProps = $props();
 
+	setContext<EmptyContext>('toast-root-context', {});
+
+	$effect(() => {
+		if (toastQueue.value.length > 1) {
+			onMultipleToast(isToastVisible, hasSwipedOut);
+		}
+	});
+
+	$effect(() => {
+		if (activeToast.value) {
+			onToastRemoval(activeToast, isToastVisible, activeToast.value.duration);
+
+			onSwipeMove({
+				ref,
+				currentX,
+				startX,
+				isToastVisible,
+				swipeThreshold,
+				isSwipeMoving,
+				isSwipeCanceled,
+				hasSwipedOut,
+			});
+		}
+	});
+
 	const childProps: ToastRootChildProps = {
 		props: {
 			ref,
@@ -250,24 +302,6 @@
 			...restProps,
 		},
 	};
-
-	onMount(() => {
-		onSwipeMove({
-			ref,
-			currentX,
-			startX,
-			isToastVisible,
-			swipeThreshold,
-			isHidden,
-			isSwipeMoving,
-			isSwipeCanceled,
-			hasSwipedOut,
-		});
-	});
-
-	$effect(() => {
-		delaySetIsHidden(isToastVisible, isHidden);
-	});
 </script>
 
 {#if activeToast.value}
@@ -279,8 +313,11 @@
 			{style}
 			class={cn(
 				'ml-auto flex w-full touch-none select-none flex-col items-center gap-x-[15px] rounded-md border bg-background p-[15px] shadow-md transition-transform duration-300 ease-out',
-				isToastVisible.value ? 'animate-toast-slide-in' : 'animate-fade-out',
-				hasSwipedOut.value && 'animate-toast-slide-out',
+				isToastVisible.value
+					? 'animate-toast-slide-in'
+					: hasSwipedOut.value
+						? 'animate-toast-slide-out'
+						: 'animate-fade-out',
 				className,
 			)}
 			aria-atomic={true}

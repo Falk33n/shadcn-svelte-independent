@@ -34,10 +34,6 @@ export {
 	type ToastViewportProps,
 };
 
-export type {
-	ToastProps,
-	ToastProviderBaseContextProps,
-	ToastViewportContextProps,
-} from './types';
+export type { ToastProps, ToastProviderBaseContextProps } from './types';
 
-export { getToastProviderBaseContext } from './utils';
+export { activeToast, showToast, toastQueue } from './utils.svelte';

@@ -1,7 +1,5 @@
 <script lang="ts">
-	import { getToastProviderBaseContext } from '../lib/components/ui/toast';
-
-	const { activeToast, showToast } = getToastProviderBaseContext('HomePage');
+	import { showToast } from '../lib/components/ui/toast';
 
 	let click = $state(0);
 </script>
@@ -10,7 +8,10 @@
 	<button
 		onclick={() => {
 			click += 1;
-			showToast(activeToast, click === 1 ? 'title' : 'other', 'okokokok');
+			showToast({
+				title: click > 1 ? 'clickGreater' : 'click',
+				content: 'clicked',
+			});
 		}}
 	>
 		click

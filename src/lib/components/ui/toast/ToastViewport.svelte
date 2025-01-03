@@ -3,9 +3,13 @@
 	module
 >
 	import { type ToastProviderBaseContextProps } from '$components/ui/toast';
-	import type { HTMLOListElementReference, ValidateContextProps } from '$types';
+	import type {
+		EmptyContext,
+		HTMLOListElementReference,
+		ValidateContextProps,
+	} from '$types';
 	import { cn, validateContext } from '$utils';
-	import { onMount, type Snippet } from 'svelte';
+	import { onMount, setContext, type Snippet } from 'svelte';
 	import type { HTMLOlAttributes } from 'svelte/elements';
 
 	export type ToastViewportAttributes = Omit<
@@ -55,9 +59,7 @@
 </script>
 
 <script lang="ts">
-	const { isToastVisible, activeToast } = validateContext(
-		providerContextSettings,
-	);
+	const { isToastVisible } = validateContext(providerContextSettings);
 
 	let {
 		ref = $bindable<HTMLOListElementReference>(null),
@@ -69,16 +71,7 @@
 		...restProps
 	}: ToastViewportProps = $props();
 
-	const childProps: ToastViewportChildProps = {
-		props: {
-			ref,
-			style,
-			'aria-label': label,
-			'role': 'region',
-			'tabindex': '-1',
-			...restProps,
-		},
-	};
+	setContext<EmptyContext>('toast-viewport-context', {});
 
 	onMount(() => {
 		document.addEventListener('keydown', (e) =>
@@ -92,14 +85,16 @@
 		};
 	});
 
-	$effect(() => {
-		if (activeToast.value) {
-			const timer = setTimeout(() => {
-				activeToast.value = undefined;
-			}, activeToast.value.duration);
-			return () => clearTimeout(timer);
-		}
-	});
+	const childProps: ToastViewportChildProps = {
+		props: {
+			ref,
+			style,
+			'aria-label': label,
+			'role': 'region',
+			'tabindex': '-1',
+			...restProps,
+		},
+	};
 </script>
 
 {#if child}
