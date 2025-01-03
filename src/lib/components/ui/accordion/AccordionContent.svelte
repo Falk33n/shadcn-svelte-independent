@@ -3,11 +3,11 @@
 	module
 >
 	import {
-		type AccordionItemContextProps,
-		type AccordionRootContextProps,
+		getAccordionItemContext,
+		getAccordionRootContext,
 	} from '$components/ui/accordion';
-	import type { HTMLDivElementReference, ValidateContextProps } from '$types';
-	import { cn, validateContext } from '$utils';
+	import type { HTMLDivElementReference } from '$types';
+	import { cn } from '$utils';
 	import { onMount, type Snippet } from 'svelte';
 	import type { HTMLAttributes } from 'svelte/elements';
 
@@ -33,51 +33,42 @@
 		child?: Snippet<[AccordionContentChildProps]>;
 	};
 
-	type IsItemOpenState = { value: boolean };
-	type HiddenState = { value: boolean };
-	type RoleState = { value?: 'region' };
-
+	const source = 'AccordionContent';
 	const style =
 		'--accordion-content-height: 0px; height: var(--accordion-content-height);';
 
-	const rootContextSettings: ValidateContextProps<AccordionRootContextProps> = {
-		key: 'accordion-root-context',
-		source: 'AccordionRoot',
-		target: 'AccordionContent',
-	};
-
-	const itemContextSettings: ValidateContextProps<AccordionItemContextProps> = {
-		key: 'accordion-item-context',
-		source: 'AccordionItem',
-		target: 'AccordionContent',
-	};
-
-	function setHeight(ref: HTMLDivElement | null, hidden: HiddenState) {
+	function setHeight(ref: HTMLDivElement | null, hidden: boolean) {
 		if (!ref) return;
-		const contentHeight = !hidden.value ? `${ref.scrollHeight}px` : '0px';
+		const contentHeight = !hidden ? `${ref.scrollHeight}px` : '0px';
 		ref.style.setProperty('--accordion-content-height', contentHeight);
 	}
 
 	let timeoutId: NodeJS.Timeout;
 
-	function delaySetHidden(isItemOpen: IsItemOpenState, hidden: HiddenState) {
-		if (!isItemOpen.value) {
+	function delaySetHidden(
+		isItemOpen: boolean,
+		setHidden: (newValue: boolean) => void,
+	) {
+		if (!isItemOpen) {
 			clearTimeout(timeoutId);
 			timeoutId = setTimeout(() => {
-				hidden.value = true;
+				setHidden(true);
 			}, 300);
 		} else {
-			hidden.value = false;
+			setHidden(false);
 		}
 	}
 
-	function getContentSiblings(ref: HTMLDivElement, role: RoleState) {
+	function getContentSiblings(
+		ref: HTMLDivElement,
+		setRole: (newValue?: 'region') => void,
+	) {
 		const rootAccordion = ref.closest<HTMLDivElement>(
 			'[data-accordion="root"]',
 		);
 
 		if (!rootAccordion) {
-			role.value = 'region';
+			setRole('region');
 			return [];
 		}
 
@@ -88,28 +79,35 @@
 		);
 	}
 
-	function setRole(
+	function modifyRole(
 		ref: HTMLDivElement | null,
-		role: RoleState,
 		rootType: 'single' | 'multiple',
+		setRole: (newValue?: 'region') => void,
 	) {
 		if (!ref || rootType === 'single') {
-			role.value = 'region';
+			setRole('region');
 			return;
 		}
 
-		const contents = getContentSiblings(ref, role);
+		const contents = getContentSiblings(ref, setRole);
 
-		role.value = contents.length <= 6 ? 'region' : undefined;
+		setRole(contents.length <= 6 ? 'region' : undefined);
 	}
 </script>
 
 <script lang="ts">
-	const { rootType, rootID } = validateContext(rootContextSettings);
-	const { itemValue, isItemOpen } = validateContext(itemContextSettings);
+	const { rootType, rootID } = getAccordionRootContext(source);
+	const { itemValue, getIsItemOpen } = getAccordionItemContext(source);
 
-	let hidden = $state({ value: true });
-	let role = $state<RoleState>({ value: undefined });
+	const isItemOpen = $derived(getIsItemOpen());
+
+	let hidden = $state(true);
+	const getHidden = () => hidden;
+	const setHidden = (newValue: boolean) => (hidden = newValue);
+
+	let role = $state<'region' | undefined>();
+	const getRole = () => role;
+	const setRole = (newValue?: 'region') => (role = newValue);
 
 	let {
 		ref = $bindable<HTMLDivElementReference>(null),
@@ -120,14 +118,14 @@
 	}: AccordionContentProps = $props();
 
 	onMount(() => {
-		setRole(ref, role, rootType);
+		modifyRole(ref, rootType, setRole);
 		setHeight(ref, hidden);
-		delaySetHidden(isItemOpen, hidden);
+		delaySetHidden(isItemOpen, setHidden);
 	});
 
 	$effect(() => {
 		setHeight(ref, hidden);
-		delaySetHidden(isItemOpen, hidden);
+		delaySetHidden(isItemOpen, setHidden);
 	});
 
 	const ariaLabelledby = `accordion-trigger-${itemValue}-${rootID}`;
@@ -138,10 +136,10 @@
 			ref,
 			id,
 			style,
-			'role': role.value,
+			'role': getRole(),
 			'aria-labelledby': ariaLabelledby,
 			'data-accordion': 'content',
-			'hidden': hidden.value,
+			'hidden': getHidden(),
 			...restProps,
 		},
 	};
@@ -154,13 +152,13 @@
 		bind:this={ref}
 		{style}
 		{id}
+		{hidden}
+		{role}
 		class={cn(
 			'overflow-hidden border-b text-sm transition-[height] duration-300 ease-out',
-			isItemOpen.value ? 'animate-accordion-down' : 'animate-accordion-up',
+			isItemOpen ? 'animate-accordion-down' : 'animate-accordion-up',
 		)}
 		aria-labelledby={ariaLabelledby}
-		hidden={hidden.value}
-		role={role.value}
 		data-accordion="content"
 		{...restProps}
 	>

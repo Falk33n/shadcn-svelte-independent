@@ -2,17 +2,14 @@
 	lang="ts"
 	module
 >
-	import type {
-		AccordionItemContextProps,
-		AccordionRootContextProps,
+	import {
+		getAccordionItemContext,
+		validateAccordionRootContext,
+		validateAccordionTriggerContext,
 	} from '$components/ui/accordion';
 	import { ChevronUp } from '$components/ui/icons';
-	import type {
-		EmptyContext,
-		SVGElementReference,
-		ValidateContextProps,
-	} from '$types';
-	import { cn, validateContext } from '$utils';
+	import type { SVGElementReference } from '$types';
+	import { cn } from '$utils';
 	import type { Snippet } from 'svelte';
 	import type { SVGAttributes } from 'svelte/elements';
 
@@ -33,29 +30,15 @@
 		child?: Snippet<[AccordionIndicatorProps]>;
 	};
 
-	const rootContextSettings: ValidateContextProps<AccordionRootContextProps> = {
-		key: 'accordion-root-context',
-		source: 'AccordionRoot',
-		target: 'AccordionIndicator',
-	};
-
-	const itemContextSettings: ValidateContextProps<AccordionItemContextProps> = {
-		key: 'accordion-item-context',
-		source: 'AccordionItem',
-		target: 'AccordionIndicator',
-	};
-
-	const triggerBaseContextSettings: ValidateContextProps<EmptyContext> = {
-		key: 'accordion-trigger-base-context',
-		source: 'AccordionTriggerBase',
-		target: 'AccordionIndicator',
-	};
+	const source = 'AccordionIndicator';
 </script>
 
 <script lang="ts">
-	validateContext(rootContextSettings);
-	const { isItemOpen } = validateContext(itemContextSettings);
-	validateContext(triggerBaseContextSettings);
+	validateAccordionRootContext(source);
+	const { getIsItemOpen } = getAccordionItemContext(source);
+	validateAccordionTriggerContext(source);
+
+	const isItemOpen = $derived(getIsItemOpen());
 
 	let {
 		ref = $bindable<SVGElementReference>(null),
@@ -76,7 +59,7 @@
 		bind:ref
 		class={cn(
 			'size-5 transition-all duration-300 ease-out [&>path]:fill-foreground',
-			isItemOpen.value && 'rotate-180 ',
+			isItemOpen && 'rotate-180 ',
 			className,
 		)}
 		aria-hidden={true}

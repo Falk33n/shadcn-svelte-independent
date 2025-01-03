@@ -2,13 +2,13 @@
 	lang="ts"
 	module
 >
-	import type {
-		AccordionItemContextProps,
-		AccordionRootContextProps,
+	import {
+		getAccordionRootContext,
+		setAccordionItemContext,
 	} from '$components/ui/accordion';
-	import type { HTMLDivElementReference, ValidateContextProps } from '$types';
-	import { cn, validateContext } from '$utils';
-	import { setContext, type Snippet } from 'svelte';
+	import type { HTMLDivElementReference } from '$types';
+	import { cn } from '$utils';
+	import { type Snippet } from 'svelte';
 	import type { HTMLAttributes } from 'svelte/elements';
 
 	export type AccordionItemChildProps = {
@@ -21,30 +21,17 @@
 		child?: Snippet<[AccordionItemChildProps]>;
 	};
 
-	type IsItemOpenState = { value: boolean };
-	type RootValueState = { value?: string | string[] };
-
-	const rootContextSettings: ValidateContextProps<AccordionRootContextProps> = {
-		key: 'accordion-root-context',
-		source: 'AccordionRoot',
-		target: 'AccordionItem',
-	};
-
-	function setIsItemOpen(
-		isItemOpen: IsItemOpenState,
-		itemValue: string,
-		rootValue: RootValueState,
-	) {
-		isItemOpen.value = Array.isArray(rootValue.value)
-			? rootValue.value.includes(itemValue)
-			: rootValue.value === itemValue;
-	}
+	const source = 'AccordionItem';
 </script>
 
 <script lang="ts">
-	const { rootValue } = validateContext(rootContextSettings);
+	const { getRootValue } = getAccordionRootContext(source);
 
-	let isItemOpen = $state({ value: false });
+	const rootValue = $derived(getRootValue());
+
+	let isItemOpen = $state(false);
+	const getIsItemOpen = () => isItemOpen;
+	const setIsItemOpen = (newValue: boolean) => (isItemOpen = newValue);
 
 	let {
 		ref = $bindable<HTMLDivElementReference>(null),
@@ -55,13 +42,12 @@
 		...restProps
 	}: AccordionItemProps = $props();
 
-	setContext<AccordionItemContextProps>('accordion-item-context', {
-		isItemOpen,
-		itemValue,
-	});
+	setAccordionItemContext({ getIsItemOpen, setIsItemOpen, itemValue });
 
 	$effect(() => {
-		setIsItemOpen(isItemOpen, itemValue, rootValue);
+		isItemOpen = Array.isArray(rootValue)
+			? rootValue.includes(itemValue)
+			: rootValue === itemValue;
 	});
 
 	const childProps: AccordionItemChildProps = {
